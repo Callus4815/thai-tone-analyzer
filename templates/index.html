@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thai Tone Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-help {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4fd;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .input-help p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #1976D2;
+        }
+
+        .translation-info {
+            background: #f0f8ff;
+            border-left: 3px solid #2196F3;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        .translation-info .info-label {
+            font-weight: bold;
+            color: #1976D2;
+        }
+
+        .offline-mode {
+            opacity: 0.5;
+            pointer-events: none;
+            background: #f5f5f5;
+        }
+
+        .offline-indicator {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        .online-indicator {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1.2em;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(0);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .word-display {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-family: 'Noto Sans Thai', sans-serif;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tone-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .tone-badge.mid { 
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        .tone-badge.low { 
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+        }
+        .tone-badge.falling { 
+            background: linear-gradient(135deg, #fd7e14, #ffc107);
+            color: white;
+        }
+        .tone-badge.high { 
+            background: linear-gradient(135deg, #007bff, #6f42c1);
+            color: white;
+        }
+        .tone-badge.rising { 
+            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            color: white;
+        }
+
+        .word-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.95em;
+        }
+
+        .info-value {
+            color: #212529;
+            font-weight: 500;
+            font-size: 0.95em;
+            text-align: right;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .analysis-content {
+            padding: 30px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .analysis-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f3f4;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .card-content {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .consonant-info {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-left: 4px solid #2196f3;
+        }
+
+        .vowel-info {
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+            border-left: 4px solid #9c27b0;
+        }
+
+        .syllable-info {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            border-left: 4px solid #4caf50;
+        }
+
+        .tone-mark-info {
+            background: linear-gradient(135deg, #fff3e0, #ffcc02);
+            border-left: 4px solid #ff9800;
+        }
+
+        .rule-explanation {
+            background: linear-gradient(135deg, #fce4ec, #f8bbd9);
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 4px solid #e91e63;
+            margin-top: 20px;
+        }
+
+        .rule-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .rule-icon {
+            width: 20px;
+            height: 20px;
+            background: #e91e63;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7em;
+        }
+
+        .rule-text {
+            color: #555;
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .tone-mark {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .tone-mark-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .tone-mark-names {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .thai-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .english-name {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        /* New Tone Analysis Breakdown Styles */
+        .tone-analysis-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .analysis-step {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .analysis-step:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .step-icon {
+            font-size: 1.1em;
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .step-title {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .consonant-char, .vowel-char {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .vowel-char {
+            /* Add extra padding for vowels that appear above consonants */
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .consonant-class {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .vowel-description {
+            color: #6c757d;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        .syllable-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .syllable-type.live {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .syllable-type.dead {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .syllable-explanation {
+            color: #6c757d;
+            font-size: 0.8em;
+            font-style: italic;
+        }
+
+        .rule-step {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-left: 4px solid #ffc107;
+        }
+
+        .rule-text {
+            font-weight: 500;
+            color: #856404;
+            line-height: 1.4;
+        }
+
+        .tone-mark-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+
+        .tone-mark-char {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #495057;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 30px;
+            text-align: center;
+        }
+
+
+        .pronunciation-timeline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .timeline-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .timeline-char {
+            font-family: 'Noto Sans Thai', sans-serif;
+            font-size: 1.1em;
+            padding: 4px 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .vowel-positioning-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border-radius: 8px;
+            border: 1px solid #bbdefb;
+        }
+
+        .consonant-vowel-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Noto Sans Thai', sans-serif;
+            font-size: 1.5em;
+        }
+
+        .consonant-char {
+            background: #4caf50;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .vowel-char {
+            background: #ff9800;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .vowel-above {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .vowel-above .vowel-char {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .vowel-below {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .vowel-below .vowel-char {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .vowel-before {
+            order: -1;
+        }
+
+        .vowel-after {
+            order: 1;
+        }
+
+        .positioning-label {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #666;
+            text-align: center;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .audio-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .audio-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .audio-button:active {
+            transform: translateY(0);
+        }
+
+        .audio-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .voice-selector {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        .voice-selector:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .consonant-class {
+            background: #4ecdc4;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .vowel-type {
+            background: #9b59b6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .syllable-type {
+            background: #2ecc71;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+            margin-top: 20px;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .example-words {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .example-word {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+
+        .example-word:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .input-group input {
+                font-size: 1.1em;
+            }
+            
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .word-display {
+                font-size: 2.5em;
+            }
+            
+            .result-header {
+                padding: 20px;
+            }
+            
+            .analysis-content {
+                padding: 20px;
+            }
+            
+            .analysis-card {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .word-display {
+                font-size: 2em;
+            }
+            
+            .tone-badge {
+                font-size: 1em;
+                padding: 6px 16px;
+            }
+            
+            .card-title {
+                font-size: 1em;
+            }
+            
+            .rule-text {
+                font-size: 1em;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Thai Tone Analyzer</h1>
+            <p>Enter a Thai word to discover its tone and the rules that determine it</p>
+            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Running on http://localhost:5001</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="thai-word">Word (Thai or English):</label>
+                <input type="text" id="thai-word" placeholder="Enter a Thai word (e.g., เกา) or English word (e.g., scratch)" autocomplete="off">
+            </div>
+            <button class="analyze-btn" onclick="analyzeWord()">Analyze Tone</button>
+            <div class="input-help">
+                <p id="connectivity-status">🔍 Checking connectivity...</p>
+                <p id="offline-help" style="display: none;">⚠️ <strong>Offline Mode:</strong> English translation and audio features are disabled. Enter Thai words directly for tone analysis.</p>
+            </div>
+        </div>
+
+        <div class="result-section" id="result-section">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="word-display" id="word-display"></div>
+                    <div class="tone-badge" id="tone-badge"></div>
+                </div>
+                <div class="analysis-content">
+                    <div class="analysis-grid" id="analysis-grid">
+                        <!-- Analysis cards will be populated by JavaScript -->
+                    </div>
+                    <div class="rule-explanation" id="rule-explanation">
+                        <div class="rule-title">
+                            <div class="rule-icon">📋</div>
+                            Tone Rule Explanation
+                        </div>
+                        <div class="rule-text" id="rule-text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="examples">
+            <h3>Try these example words:</h3>
+            <div class="example-words">
+                <div class="example-word" onclick="setWord('กา')">กา</div>
+                <div class="example-word" onclick="setWord('ขา')">ขา</div>
+                <div class="example-word" onclick="setWord('คา')">คา</div>
+                <div class="example-word" onclick="setWord('เธอ')">เธอ</div>
+                <div class="example-word" onclick="setWord('เกา')">เกา</div>
+                <div class="example-word" onclick="setWord('ไก่')">ไก่</div>
+                <div class="example-word" onclick="setWord('โกรธ')">โกรธ</div>
+                <div class="example-word" onclick="setWord('ใบแจ้งนี้')">ใบแจ้งนี้</div>
+                <div class="example-word" onclick="setWord('ก่า')">ก่า</div>
+                <div class="example-word" onclick="setWord('ข่า')">ข่า</div>
+                <div class="example-word" onclick="setWord('ค่า')">ค่า</div>
+                <div class="example-word" onclick="setWord('ก๊า')">ก๊า</div>
+                <div class="example-word" onclick="setWord('ก๋า')">ก๋า</div>
+                <div class="example-word" onclick="setWord('ลูกกรอก')">ลูกกรอก</div>
+                <div class="example-word" onclick="setWord('ลูก')">ลูก</div>
+                <div class="example-word" onclick="setWord('กรอก')">กรอก</div>
+                <div class="example-word" onclick="setWord('บ้าน')">บ้าน</div>
+                <div class="example-word" onclick="setWord('โรงเรียน')">โรงเรียน</div>
+                <div class="example-word" onclick="setWord('มหาวิทยาลัย')">มหาวิทยาลัย</div>
+                <div class="example-word" onclick="setWord('สวัสดี')">สวัสดี</div>
+                <div class="example-word" onclick="setWord('ขอบคุณ')">ขอบคุณ</div>
+                <div class="example-word" onclick="setWord('น้ำ')">น้ำ</div>
+                <div class="example-word" onclick="setWord('อาหาร')">อาหาร</div>
+                <div class="example-word" onclick="setWord('หนังสือ')">หนังสือ</div>
+                <div class="example-word" onclick="setWord('อะไร')">อะไร</div>
+                <div class="example-word" onclick="setWord('อย่า')">อย่า</div>
+                <div class="example-word" onclick="setWord('อยาก')">อยาก</div>
+                <div class="example-word" onclick="setWord('อยู่')">อยู่</div>
+                <div class="example-word" onclick="setWord('นม')">นม</div>
+                <div class="example-word" onclick="setWord('คน')">คน</div>
+                <div class="example-word" onclick="setWord('ลม')">ลม</div>
+                <div class="example-word" onclick="setWord('ผสม')">ผสม</div>
+                <div class="example-word" onclick="setWord('ถนน')">ถนน</div>
+                <div class="example-word" onclick="setWord('บวก')">บวก</div>
+                <div class="example-word" onclick="setWord('สวน')">สวน</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setWord(word) {
+            document.getElementById('thai-word').value = word;
+            analyzeWord();
+        }
+
+        let isOnline = true;
+
+        // Check connectivity on page load
+        async function checkConnectivity() {
+            try {
+                const response = await fetch('/connectivity');
+                const data = await response.json();
+                isOnline = data.online;
+                updateConnectivityUI();
+            } catch (error) {
+                isOnline = false;
+                updateConnectivityUI();
+            }
+        }
+
+        function updateConnectivityUI() {
+            const statusEl = document.getElementById('connectivity-status');
+            const offlineHelpEl = document.getElementById('offline-help');
+            const inputEl = document.getElementById('thai-word');
+            
+            if (isOnline) {
+                statusEl.innerHTML = '✅ <strong>Online:</strong> All features available';
+                statusEl.className = 'online-indicator';
+                offlineHelpEl.style.display = 'none';
+                inputEl.placeholder = 'Enter a Thai word (e.g., เกา) or English word (e.g., scratch)';
+            } else {
+                statusEl.innerHTML = '⚠️ <strong>Offline:</strong> Limited features available';
+                statusEl.className = 'offline-indicator';
+                offlineHelpEl.style.display = 'block';
+                inputEl.placeholder = 'Enter a Thai word (e.g., เกา) - English translation unavailable offline';
+            }
+        }
+
+        // Check connectivity when page loads
+        document.addEventListener('DOMContentLoaded', checkConnectivity);
+
+        function analyzeWord() {
+            const word = document.getElementById('thai-word').value.trim();
+            const resultSection = document.getElementById('result-section');
+            const analyzeBtn = document.querySelector('.analyze-btn');
+            
+            if (!word) {
+                alert('Please enter a word.');
+                return;
+            }
+
+            // Check if trying to use English translation while offline
+            if (!isOnline && /^[a-zA-Z\s]+$/.test(word)) {
+                alert('English translation is not available offline. Please enter a Thai word directly.');
+                return;
+            }
+
+            console.log('Analyzing word:', word); // Debug log
+
+            // Show loading state
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+            resultSection.style.display = 'none';
+
+            // Make API call
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ word: word })
+            })
+            .then(response => {
+                console.log('Response status:', response.status); // Debug log
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data); // Debug log
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResult(data);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error); // Debug log
+                showError('An error occurred while analyzing the word. Please make sure the server is running.');
+            })
+            .finally(() => {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Tone';
+            });
+        }
+
+        function showResult(data) {
+            console.log('Showing result:', data); // Debug log
+            
+            // Handle offline mode error
+            if (data.offline_mode) {
+                alert(data.error);
+                return;
+            }
+            
+            const resultSection = document.getElementById('result-section');
+            const wordDisplay = document.getElementById('word-display');
+            const toneBadge = document.getElementById('tone-badge');
+            const analysisGrid = document.getElementById('analysis-grid');
+            const ruleText = document.getElementById('rule-text');
+
+            // Clear previous content
+            analysisGrid.innerHTML = '';
+            
+            // Clear previous word info
+            const existingWordInfo = document.querySelector('.word-info');
+            if (existingWordInfo) {
+                existingWordInfo.remove();
+            }
+
+            // Set word, tone, translation, and romanization
+            wordDisplay.textContent = data.word;
+            toneBadge.textContent = data.tone;
+            toneBadge.className = 'tone-badge ' + data.tone.toLowerCase();
+            
+            // Add translation, romanization, and audio info
+            const wordInfo = document.createElement('div');
+            wordInfo.className = 'word-info';
+            
+            // Determine what to show based on input language
+            let translationInfo = '';
+            if (data.input_language === 'english') {
+                translationInfo = `
+                    <div class="info-item translation-info">
+                        <span class="info-label">English Input:</span>
+                        <span class="info-value">${data.original_input}</span>
+                    </div>
+                    <div class="info-item translation-info">
+                        <span class="info-label">Thai Translation:</span>
+                        <span class="info-value">${data.word}</span>
+                    </div>
+                `;
+            } else {
+                translationInfo = `
+                    <div class="info-item">
+                        <span class="info-label">Translation:</span>
+                        <span class="info-value">${data.translation}</span>
+                    </div>
+                `;
+            }
+            
+            wordInfo.innerHTML = `
+                ${translationInfo}
+                <div class="info-item">
+                    <span class="info-label">Romanized:</span>
+                    <span class="info-value">${data.romanized}</span>
+                </div>
+                <div class="info-item audio-controls ${!isOnline ? 'offline-mode' : ''}">
+                    <span class="info-label">Pronunciation:</span>
+                    <button id="play-audio" class="audio-button" onclick="playPronunciation('${data.word}')" ${!isOnline ? 'disabled' : ''}>
+                        🔊 Play Audio
+                    </button>
+                    <select id="voice-selector" class="voice-selector" ${!isOnline ? 'disabled' : ''}>
+                        <option value="th">Thai (Default)</option>
+                    </select>
+                    ${!isOnline ? '<small style="color: #666; font-style: italic;">Audio unavailable offline</small>' : ''}
+                </div>
+            `;
+            
+            // Insert after tone badge
+            toneBadge.parentNode.insertBefore(wordInfo, toneBadge.nextSibling);
+
+            if (data.is_multi_syllable) {
+                // Handle multi-syllable words
+                analysisGrid.innerHTML = `
+                    <div class="analysis-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #e8f5e8, #c8e6c9); border-left: 4px solid #4caf50;">
+                        <div class="card-title">
+                            <div class="card-icon">🔢</div>
+                            Multi-Syllable Analysis
+                        </div>
+                        <div class="card-content">
+                            <strong>${data.explanation}</strong>
+                        </div>
+                    </div>
+                `;
+
+                // Add individual syllable analysis
+                data.syllables.forEach((syllable, index) => {
+                    const syllableTone = syllable.tone.toLowerCase();
+                    analysisGrid.innerHTML += `
+                        <div class="analysis-card" style="border-left: 4px solid #${syllableTone === 'mid' ? '28a745' : syllableTone === 'low' ? 'dc3545' : syllableTone === 'falling' ? 'fd7e14' : syllableTone === 'high' ? '007bff' : '6f42c1'};">
+                            <div class="card-title">
+                                <div class="card-icon">${index + 1}</div>
+                                Syllable ${index + 1}: ${syllable.syllable}
+                            </div>
+                            <div class="card-content">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <span class="tone-badge ${syllableTone}" style="font-size: 0.9em; margin-right: 10px;">${syllable.tone}</span>
+                                </div>
+                                <div class="tone-analysis-breakdown">
+                                    ${parseToneExplanation(syllable.explanation)}
+                                </div>
+                                ${syllable.pronunciation_order ? `
+                                    <div style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #17a2b8;">
+                                        <div style="font-size: 0.8em; font-weight: bold; color: #495057; margin-bottom: 8px;">🔄 Pronunciation Order:</div>
+                                        <div class="pronunciation-visual" style="margin: 0; padding: 10px; gap: 10px;">
+                                            <div class="written-sequence">
+                                                <div class="sequence-label" style="font-size: 0.7em;">Written</div>
+                                                <div class="sequence-chars" style="font-size: 1em;">
+                                                    ${syllable.pronunciation_order.written_sequence.map(char => `<div class="sequence-char" style="padding: 4px 8px; font-size: 0.9em;">${char}</div>`).join('')}
+                                                </div>
+                                            </div>
+                                            <div class="sequence-arrow" style="font-size: 1.2em;">→</div>
+                                            <div class="spoken-sequence">
+                                                <div class="sequence-label" style="font-size: 0.7em;">Spoken</div>
+                                                <div class="sequence-chars" style="font-size: 1em;">
+                                                    ${syllable.pronunciation_order.pronunciation_sequence.map(char => `<div class="sequence-char" style="padding: 4px 8px; font-size: 0.9em;">${char}</div>`).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                ruleText.innerHTML = `<span class="highlight">Each syllable is analyzed independently using Thai tone rules.</span>`;
+            } else {
+                // Handle single syllable words with new parsing
+                analysisGrid.innerHTML = `
+                    <div class="tone-analysis-breakdown">
+                        ${parseToneExplanation(data.explanation)}
+                    </div>
+                `;
+                
+                // Set rule explanation for single syllable
+                ruleText.innerHTML = `<span class="highlight">Tone determined by consonant class, vowel length, syllable type, and tone marks.</span>`;
+            }
+
+            // Make sure the result section is visible
+            resultSection.style.display = 'block';
+            resultSection.classList.add('show');
+        }
+
+        function parseToneExplanation(explanation) {
+            // Parse the explanation text into structured components
+            const parts = explanation.split(' | ');
+            let html = '';
+            
+            parts.forEach(part => {
+                if (part.startsWith('Initial consonant:')) {
+                    const consonantMatch = part.match(/Initial consonant: '([^']+)' \(Class: ([^)]+)\)/);
+                    if (consonantMatch) {
+                        html += `
+                            <div class="analysis-step">
+                                <div class="step-header">
+                                    <span class="step-icon">🔤</span>
+                                    <span class="step-title">Initial Consonant</span>
+                                </div>
+                                <div class="step-content">
+                                    <span class="consonant-char">${consonantMatch[1]}</span>
+                                    <span class="consonant-class">${consonantMatch[2]}-class</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if (part.startsWith('Vowel:')) {
+                    const vowelText = part.replace('Vowel: ', '');
+                    const vowelMatch = vowelText.match(/vowel '([^']+)' \(([^)]+)\)/);
+                    if (vowelMatch) {
+                        html += `
+                            <div class="analysis-step">
+                                <div class="step-header">
+                                    <span class="step-icon">🎵</span>
+                                    <span class="step-title">Vowel Sound</span>
+                                </div>
+                                <div class="step-content">
+                                    <span class="vowel-char">${vowelMatch[1]}</span>
+                                    <span class="vowel-description">${vowelMatch[2]}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if (part.startsWith('Syllable type:')) {
+                    const syllableMatch = part.match(/Syllable type: ([^|]+)/);
+                    if (syllableMatch) {
+                        const syllableType = syllableMatch[1].trim();
+                        html += `
+                            <div class="analysis-step">
+                                <div class="step-header">
+                                    <span class="step-icon">📝</span>
+                                    <span class="step-title">Syllable Type</span>
+                                </div>
+                                <div class="step-content">
+                                    <span class="syllable-type ${syllableType}">${syllableType}</span>
+                                    <span class="syllable-explanation">${syllableType === 'live' ? 'Long vowel or sonorant ending' : 'Short vowel or stop ending'}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if (part.startsWith('Tone marks found:')) {
+                    const toneMarkMatch = part.match(/Tone marks found: ([^|]+)/);
+                    if (toneMarkMatch) {
+                        const toneMarks = toneMarkMatch[1].trim();
+                        const toneMarkNames = {
+                            '่': { thai: 'ไม้เอก', english: 'Mai Ek' },
+                            '้': { thai: 'ไม้โท', english: 'Mai Tho' },
+                            '๊': { thai: 'ไม้ตรี', english: 'Mai Tri' },
+                            '๋': { thai: 'ไม้จัตวา', english: 'Mai Chattawa' }
+                        };
+                        
+                        let toneMarkHTML = '';
+                        for (let mark of toneMarks) {
+                            if (toneMarkNames[mark]) {
+                                toneMarkHTML += `
+                                    <div class="tone-mark-item">
+                                        <span class="tone-mark-char">${mark}</span>
+                                        <div class="tone-mark-names">
+                                            <div class="thai-name">${toneMarkNames[mark].thai}</div>
+                                            <div class="english-name">${toneMarkNames[mark].english}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                        
+                        html += `
+                            <div class="analysis-step">
+                                <div class="step-header">
+                                    <span class="step-icon">🎯</span>
+                                    <span class="step-title">Tone Marks</span>
+                                </div>
+                                <div class="step-content">
+                                    ${toneMarkHTML}
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if (part.startsWith('Rule:')) {
+                    const ruleText = part.replace('Rule: ', '');
+                    html += `
+                        <div class="analysis-step rule-step">
+                            <div class="step-header">
+                                <span class="step-icon">⚖️</span>
+                                <span class="step-title">Tone Rule</span>
+                            </div>
+                            <div class="step-content">
+                                <span class="rule-text">${ruleText}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            return html;
+        }
+
+        function showError(message) {
+            const resultSection = document.getElementById('result-section');
+            const analysisGrid = document.getElementById('analysis-grid');
+            const ruleText = document.getElementById('rule-text');
+            
+            analysisGrid.innerHTML = `
+                <div class="error-card">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-message">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            ruleText.innerHTML = 'Please try again with a valid Thai word.';
+
+            resultSection.style.display = 'block';
+            resultSection.classList.add('show');
+        }
+
+        async function playPronunciation(text) {
+            try {
+                const response = await fetch('/audio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: 'th'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.audio) {
+                        const audio = new Audio('data:audio/mp3;base64,' + data.audio);
+                        audio.play().catch(error => {
+                            console.error('Audio play failed:', error);
+                            alert('Unable to play audio. Please check your browser settings.');
+                        });
+                    } else {
+                        alert('Audio generation failed. Please try again.');
+                    }
+                } else {
+                    alert('Audio service unavailable. Please try again later.');
+                }
+            } catch (error) {
+                console.error('Audio request failed:', error);
+                alert('Audio service unavailable. Please check your internet connection.');
+            }
+        }
+
+        // Allow Enter key to trigger analysis
+        document.getElementById('thai-word').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeWord();
+            }
+        });
+    </script>
+</body>
+</html>
