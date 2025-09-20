@@ -55,8 +55,13 @@ def get_romanization(thai_word):
     try:
         return romanize(thai_word, engine='tltk')
     except Exception as e:
-        print(f"Error romanizing '{thai_word}': {e}")
-        return "Unable to romanize"
+        print(f"Error romanizing with tltk '{thai_word}': {e}")
+        # Fallback to royin engine
+        try:
+            return romanize(thai_word, engine='royin')
+        except Exception as e2:
+            print(f"Error romanizing with royin '{thai_word}': {e2}")
+            return "Unable to romanize"
 
 def get_phonetic_ipa(thai_word):
     """Get IPA (International Phonetic Alphabet) representation of Thai word."""
