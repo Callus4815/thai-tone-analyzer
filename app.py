@@ -256,12 +256,13 @@ TONE_MARKS = {
 
 # Complex vowel patterns (diphthongs and compound vowels)
 COMPLEX_VOWELS = {
+    # More specific patterns first
+    'เ_ือะ': {'type': 'short', 'name': 'uea (short uea)', 'description': 'short uea sound', 'pattern': r'เ.*ือะ'},
+    'เ_ือ': {'type': 'long', 'name': 'uea (long uea)', 'description': 'long uea sound', 'pattern': r'เ.*ือ'},
+    'เ_ียะ': {'type': 'short', 'name': 'ia (short ia)', 'description': 'short ia sound', 'pattern': r'เ.*ียะ'},
+    'เ_ีย': {'type': 'long', 'name': 'ia (long ia)', 'description': 'long ia sound', 'pattern': r'เ.*ีย'},
     'เ_็': {'type': 'short', 'name': 'e (short e)', 'description': 'short e sound with mai han-akat', 'pattern': r'เ.*็'},
     'แ_็': {'type': 'short', 'name': 'ae (short ae)', 'description': 'short ae sound with mai han-akat', 'pattern': r'แ.*็'},
-    'เ_ือะ': {'type': 'short', 'name': 'uea (short uea)', 'description': 'short uea sound', 'pattern': r'เ.*ือะ'},
-    'เ_ียะ': {'type': 'short', 'name': 'ia (short ia)', 'description': 'short ia sound', 'pattern': r'เ.*ียะ'},
-    'เ_ือ': {'type': 'long', 'name': 'uea (long uea)', 'description': 'long uea sound', 'pattern': r'เ.*ือ'},
-    'เ_ีย': {'type': 'long', 'name': 'ia (long ia)', 'description': 'long ia sound', 'pattern': r'เ.*ีย'},
     'เ_าะ': {'type': 'short', 'name': 'oe (short oe)', 'description': 'short oe sound', 'pattern': r'เ.*าะ'},
     'เ_ะ': {'type': 'short', 'name': 'e (short e)', 'description': 'short e sound', 'pattern': r'เ.*ะ'},
     'แ_ะ': {'type': 'short', 'name': 'ae (short ae)', 'description': 'short ae sound', 'pattern': r'แ.*ะ'},
@@ -541,8 +542,28 @@ def identify_vowels(word):
             })
             return vowels_found  # Sanskrit vowels take precedence
     
-    # Check for complex vowels (diphthongs)
+    # Check for specific complex vowels first (เ_ือ, เ_ีย)
+    specific_patterns = ['เ_ือ', 'เ_ีย']
+    for pattern_name in specific_patterns:
+        if pattern_name in COMPLEX_VOWELS:
+            info = COMPLEX_VOWELS[pattern_name]
+            pattern = info['pattern']
+            if re.search(pattern, word):
+                # Get positioning for the first vowel character in the pattern
+                first_vowel = pattern_name.split('_')[0] if '_' in pattern_name else pattern_name[0]
+                positioning = get_vowel_positioning(first_vowel, word, 0)
+                vowels_found.append({
+                    'char': pattern_name,
+                    'info': info,
+                    'type': 'complex',
+                    'positioning': positioning
+                })
+                return vowels_found  # Specific patterns take precedence
+    
+    # Check for other complex vowels (diphthongs)
     for complex_vowel, info in COMPLEX_VOWELS.items():
+        if complex_vowel in specific_patterns:
+            continue  # Skip patterns we already checked
         pattern = info['pattern']
         if re.search(pattern, word):
             # Get positioning for the first vowel character in the pattern
