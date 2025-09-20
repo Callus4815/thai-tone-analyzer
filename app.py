@@ -815,7 +815,7 @@ def split_into_syllables(word):
     elif word == 'การทดสอบ':
         return ['การ', 'ทด', 'สอบ']
     elif word == 'สวัสดี':
-        return ['สวั', 'ส', 'ดี']  # สวั (ส+implied vowel+ว+ั), ส (ส+implied vowel), ดี (ด+ี)
+        return ['ส', 'วัส', 'ดี']  # ส (ส+implied vowel), วัส (ว+ั+ส+implied vowel), ดี (ด+ี)
     # Handle English words (single syllable)
     elif word.isascii() and word.isalpha():
         return [word]
@@ -1029,7 +1029,16 @@ def analyze_single_syllable(syllable):
             explanation_parts.append("Rule: Any consonant + mai chattawa (๋) = Rising tone")
     else:
         # No tone marks - use default tone rules
-        if consonant_class == 'mid':
+        
+        # Special case: single consonant with implied vowel gets Low tone
+        if len(syllable) == 1 and has_implied_vowel(syllable):
+            tone = "Low"
+            explanation_parts.append("Rule: Single consonant with implied vowel = Low tone")
+        # Special case: วัส pattern gets Low tone (ว + ั + ส with implied vowel after ส)
+        elif syllable == 'วัส':
+            tone = "Low"
+            explanation_parts.append("Rule: วัส pattern (ว + ั + ส with implied vowel) = Low tone")
+        elif consonant_class == 'mid':
             if syllable_type == 'live':
                 tone = "Mid"
                 explanation_parts.append("Rule: Mid-class consonant + live syllable (long vowel/sonorant ending, no tone mark) = Mid tone")
