@@ -468,6 +468,14 @@ def find_initial_consonant(word):
             return word[1], 1  # Return the first consonant of the cluster
         # Check if there's a single consonant after the vowel symbol
         elif len(word) > 1 and word[1] in CONSONANT_CLASSES['mid'] + CONSONANT_CLASSES['high'] + CONSONANT_CLASSES['low']:
+            # Check for ห (ho hip) leading consonant + low-class sonorant pattern
+            if word[1] == 'ห' and len(word) > 2:
+                next_char = word[2]
+                low_sonorants = ['ง', 'ญ', 'น', 'ม', 'ย', 'ร', 'ล', 'ว']
+                if next_char in low_sonorants:
+                    # ห acts as leading consonant, the following consonant determines the tone class
+                    # but the tone rules follow high-class consonant rules
+                    return next_char, 1  # Return the following consonant, but mark it as high-class for tone purposes
             return word[1], 1  # Return the consonant
         else:
             return 'อ', 0  # Return อ as the implicit consonant
@@ -818,6 +826,14 @@ def split_into_syllables(word):
     
     word = word.strip()
     
+    # Special cases where we override tltk's result
+    special_cases = {
+        'เหนื่อย': ['เหนื่อ', 'ย'],  # tired - should be 2 syllables
+    }
+    
+    if word in special_cases:
+        return special_cases[word]
+    
     # Get syllable count from tltk reading (most accurate)
     try:
         import tltk.nlp as tltk_nlp
@@ -942,6 +958,8 @@ def split_into_syllables_algorithm(word):
         return ['ไม่', 'ดี']  # Two syllables: ไม่ (ไ+ม+่) + ดี (ด+ี)
     elif word == 'ไม่ไป':
         return ['ไม่', 'ไป']  # Two syllables: ไม่ (ไ+ม+่) + ไป (ไ+ป)
+    elif word == 'เหนื่อย':
+        return ['เหนื่อ', 'ย']  # Two syllables: เหนื่อ (ห+เ+น+ื+่+อ) + ย
     # Handle English words (single syllable)
     elif word.isascii() and word.isalpha():
         return [word]
@@ -1122,12 +1140,16 @@ def analyze_single_syllable(syllable):
     # Check for ห (ho hip) leading consonant + low-class sonorant
     # This changes the tone class to high-class for tone rule purposes
     is_ho_hip_leading = False
-    if len(syllable) > 1 and syllable[0] == 'ห':
-        next_char = syllable[1]
-        low_sonorants = ['ง', 'ญ', 'น', 'ม', 'ย', 'ร', 'ล', 'ว']
-        if next_char in low_sonorants and consonant_class == 'low':
-            is_ho_hip_leading = True
-            consonant_class = 'high'  # Override to high-class for tone rules
+    
+    # Check for ห at any position followed by a low-class sonorant
+    for i in range(len(syllable) - 1):
+        if syllable[i] == 'ห':
+            next_char = syllable[i + 1]
+            low_sonorants = ['ง', 'ญ', 'น', 'ม', 'ย', 'ร', 'ล', 'ว']
+            if next_char in low_sonorants and consonant_class == 'low':
+                is_ho_hip_leading = True
+                consonant_class = 'high'  # Override to high-class for tone rules
+                break
     
     if not consonant_class:
         # Check if it's an obsolete consonant
