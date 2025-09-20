@@ -124,6 +124,35 @@ def get_translation(thai_word):
 def translate_english_to_thai(english_word):
     """Translate English word to Thai using MyMemory API."""
     try:
+        # Simple translations for common short words to avoid complex API results
+        simple_translations = {
+            'hi': 'สวัสดี',
+            'hello': 'สวัสดี',
+            'bye': 'ลาก่อน',
+            'yes': 'ใช่',
+            'no': 'ไม่',
+            'ok': 'โอเค',
+            'okay': 'โอเค',
+            'test': 'ทดสอบ',
+            'cat': 'แมว',
+            'dog': 'สุนัข',
+            'book': 'หนังสือ',
+            'water': 'น้ำ',
+            'food': 'อาหาร',
+            'house': 'บ้าน',
+            'car': 'รถยนต์',
+            'tree': 'ต้นไม้',
+            'sun': 'ดวงอาทิตย์',
+            'moon': 'ดวงจันทร์',
+            'star': 'ดาว',
+            'sky': 'ท้องฟ้า'
+        }
+        
+        # Check simple translations first
+        word_lower = english_word.lower()
+        if word_lower in simple_translations:
+            return simple_translations[word_lower]
+        
         url = "https://api.mymemory.translated.net/get"
         params = {
             'q': english_word,
@@ -138,6 +167,9 @@ def translate_english_to_thai(english_word):
                 translation = data['responseData']['translatedText']
                 translation = translation.strip()
                 if translation and translation != english_word:
+                    # Filter out very long translations that might cause issues
+                    if len(translation) > 50:
+                        return None
                     return translation
                 
                 # If main translation is same as input, try to find a better match
@@ -153,7 +185,8 @@ def translate_english_to_thai(english_word):
                         
                         if (match_translation and 
                             match_translation != english_word and 
-                            quality > best_quality):
+                            quality > best_quality and
+                            len(match_translation) <= 50):  # Filter out very long translations
                             best_match = match_translation
                             best_quality = quality
                     
@@ -783,6 +816,9 @@ def split_into_syllables(word):
         return ['น่า', 'เบื่อ']
     elif word == 'การทดสอบ':
         return ['การ', 'ทด', 'สอบ']
+    # Handle English words (single syllable)
+    elif word.isascii() and word.isalpha():
+        return [word]
     # Use improved look-back algorithm for syllable splitting
     return improved_syllable_split(word)
 
