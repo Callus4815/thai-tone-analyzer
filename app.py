@@ -54,7 +54,8 @@ def get_romanization(thai_word):
     """Get romanized version of Thai word."""
     try:
         return romanize(thai_word, engine='tltk')
-    except:
+    except Exception as e:
+        print(f"Error romanizing '{thai_word}': {e}")
         return "Unable to romanize"
 
 def get_phonetic_ipa(thai_word):
@@ -64,7 +65,8 @@ def get_phonetic_ipa(thai_word):
         ipa = tltk_nlp.th2ipa(thai_word)
         # Clean up the output (remove <s/> tags)
         return ipa.replace('<s/>', '').strip()
-    except:
+    except Exception as e:
+        print(f"Error generating IPA for '{thai_word}': {e}")
         return "Unable to generate IPA"
 
 def get_phonetic_reading(thai_word):
@@ -74,7 +76,8 @@ def get_phonetic_reading(thai_word):
         reading = tltk_nlp.th2read(thai_word)
         # Clean up the output (remove trailing hyphens)
         return reading.rstrip('-')
-    except:
+    except Exception as e:
+        print(f"Error generating reading for '{thai_word}': {e}")
         return "Unable to generate reading"
 
 def generate_audio(text, voice_name="th"):
