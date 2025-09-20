@@ -1204,15 +1204,22 @@ def get_voices():
 def check_connectivity():
     """Check internet connectivity."""
     try:
-        # Test with a simple request to Google DNS
-        response = requests.get('https://8.8.8.8', timeout=3)
+        # Test with a more reliable endpoint that works on mobile
+        response = requests.get('https://httpbin.org/status/200', timeout=5)
+        if response.status_code == 200:
+            return jsonify({
+                'online': True,
+                'timestamp': response.headers.get('Date', '')
+            })
+        else:
+            return jsonify({
+                'online': False,
+                'timestamp': ''
+            })
+    except:
+        # Fallback: assume online if we can't check
         return jsonify({
             'online': True,
-            'timestamp': response.headers.get('Date', '')
-        })
-    except:
-        return jsonify({
-            'online': False,
             'timestamp': ''
         })
 
