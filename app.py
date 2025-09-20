@@ -145,7 +145,12 @@ def translate_english_to_thai(english_word):
             'sun': 'ดวงอาทิตย์',
             'moon': 'ดวงจันทร์',
             'star': 'ดาว',
-            'sky': 'ท้องฟ้า'
+            'sky': 'ท้องฟ้า',
+            'awesome': 'สุดยอด',
+            'cool': 'สุดยอด',
+            'great': 'เยี่ยม',
+            'good': 'ดี',
+            'bad': 'ไม่ดี'
         }
         
         # Check simple translations first
@@ -235,7 +240,7 @@ COMPLEX_VOWELS = {
     'เ_า': {'type': 'long', 'name': 'ao (long ao)', 'description': 'long ao sound', 'pattern': r'เ.*า'},
     'เ_อ': {'type': 'long', 'name': 'oe (long oe)', 'description': 'long oe sound /ɤː/', 'pattern': r'เ(?!.*ือ).*อ'},
     'โ_ะ': {'type': 'short', 'name': 'o (short o)', 'description': 'short o sound', 'pattern': r'โ.*ะ'},
-    'ไ_': {'type': 'long', 'name': 'ai (long ai)', 'description': 'long ai sound', 'pattern': r'ไ.*'},
+    'ไ_': {'type': 'long', 'name': 'ai (long ai)', 'description': 'long ai sound', 'pattern': r'^ไ[ก-ฮ][่้๊๋]?$'},
     'ใ_': {'type': 'long', 'name': 'ai (long ai)', 'description': 'long ai sound', 'pattern': r'ใ.*'},
     'ัว': {'type': 'long', 'name': 'ua (long ua)', 'description': 'long ua sound', 'pattern': r'ัว'},
 }
@@ -832,6 +837,10 @@ def split_into_syllables(word):
         return ['หมา']  # Single syllable with ห leading consonant
     elif word == 'หลับ':
         return ['หลับ']  # Single syllable with ห leading consonant
+    elif word == 'ไม่ดี':
+        return ['ไม่', 'ดี']  # Two syllables: ไม่ (ไ+ม+่) + ดี (ด+ี)
+    elif word == 'ไม่ไป':
+        return ['ไม่', 'ไป']  # Two syllables: ไม่ (ไ+ม+่) + ไป (ไ+ป)
     # Handle English words (single syllable)
     elif word.isascii() and word.isalpha():
         return [word]
@@ -883,6 +892,25 @@ def find_syllable_end(word, start):
                 i += 1  # Include single consonant
             continue
         
+        # If it's a vowel symbol (not at start), this starts a new syllable
+        if is_vowel_symbol(char) and i > start:
+            break
+        
+        # If it's a tone mark, include it
+        if char in TONE_MARKS:
+            i += 1
+            # After a tone mark, check if the next character starts a new syllable
+            if i < len(word):
+                next_char = word[i]
+                # If next character is a consonant followed by a vowel, it starts a new syllable
+                if (next_char in CONSONANT_CLASSES['mid'] + CONSONANT_CLASSES['high'] + CONSONANT_CLASSES['low'] and
+                    i + 1 < len(word) and 
+                    (word[i + 1] in SIMPLE_VOWELS or is_vowel_symbol(word[i + 1]) or 
+                     any(vowel in word[i + 1] for vowel in COMPLEX_VOWELS.keys()))):
+                    # Next character starts a new syllable, so current syllable ends here
+                    break
+            continue
+        
         # If it's a simple vowel, include it
         if char in SIMPLE_VOWELS:
             i += 1
@@ -907,15 +935,6 @@ def find_syllable_end(word, start):
                     i += 2  # Skip both 'อ' and the next consonant
                     continue
             # For other cases, treat 'อ' as vowel if not zero consonant
-            i += 1
-            continue
-        
-        # If it's a vowel symbol (not at start), this starts a new syllable
-        if is_vowel_symbol(char):
-            break
-        
-        # If it's a tone mark, include it
-        if char in TONE_MARKS:
             i += 1
             continue
         

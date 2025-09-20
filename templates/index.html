@@ -135,6 +135,57 @@
             font-size: 1.1em;
         }
 
+        .mode-toggle {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .toggle-container {
+            display: inline-flex;
+            background: #f8f9fa;
+            border-radius: 25px;
+            padding: 4px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mode-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+            min-width: 120px;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: #e9ecef;
+            color: #495057;
+            transform: translateY(-1px);
+        }
+
+        .mode-description {
+            margin-top: 8px;
+        }
+
+        .mode-description p {
+            color: #666;
+            font-size: 0.95em;
+            margin: 0;
+            font-style: italic;
+        }
+
         .analyze-btn {
             width: 100%;
             padding: 15px;
@@ -818,6 +869,12 @@
                 font-size: 1.1em;
             }
             
+            .mode-btn {
+                padding: 10px 20px;
+                font-size: 0.9em;
+                min-width: 100px;
+            }
+            
             .analysis-grid {
                 grid-template-columns: 1fr;
             }
@@ -864,18 +921,30 @@
     <div class="container">
         <div class="header">
             <h1>Thai Tone Analyzer</h1>
-            <p>Enter a Thai word to discover its tone and the rules that determine it</p>
+            <p>Analyze Thai word tones and pronunciation rules with detailed explanations</p>
         </div>
 
         <div class="input-section">
+            <!-- Mode Toggle -->
+            <div class="mode-toggle">
+                <div class="toggle-container">
+                    <button id="thai-mode-btn" class="mode-btn active" onclick="setMode('thai')">🇹🇭 Thai</button>
+                    <button id="english-mode-btn" class="mode-btn" onclick="setMode('english')">🇺🇸 English</button>
+                </div>
+                <div class="mode-description">
+                    <p id="mode-description">Enter a Thai word to analyze its tone and pronunciation rules</p>
+                </div>
+            </div>
+
             <div class="input-group">
-                <label for="thai-word">Word (Thai or English):</label>
-                <input type="text" id="thai-word" placeholder="Enter a Thai word (e.g., เกา) or English word (e.g., scratch)" autocomplete="off">
+                <label for="thai-word" id="input-label">Thai Word:</label>
+                <input type="text" id="thai-word" placeholder="Enter a Thai word (e.g., เกา)" autocomplete="off">
             </div>
             <button class="analyze-btn" onclick="analyzeWord()">Analyze Tone</button>
             <div class="input-help">
                 <p id="connectivity-status">🔍 Checking connectivity...</p>
                 <p id="offline-help" style="display: none;">⚠️ <strong>Offline Mode:</strong> English translation and audio features are disabled. Enter Thai words directly for tone analysis.</p>
+                <p id="english-limitations" style="display: none;">⚠️ <strong>Limited English Support:</strong> Only single words are supported. For best results, use Thai words directly.</p>
             </div>
         </div>
 
@@ -901,8 +970,9 @@
         </div>
 
         <div class="examples">
-            <h3>Try these example words:</h3>
-            <div class="example-words">
+            <h3 id="examples-title">Try these example words:</h3>
+            <div class="example-words" id="example-words">
+                <!-- Thai examples (default) -->
                 <div class="example-word" onclick="setWord('กา')">กา</div>
                 <div class="example-word" onclick="setWord('ขา')">ขา</div>
                 <div class="example-word" onclick="setWord('คา')">คา</div>
@@ -949,6 +1019,123 @@
         }
 
         let isOnline = true;
+        let currentMode = 'thai'; // 'thai' or 'english'
+
+        // Mode toggle functions
+        function setMode(mode) {
+            currentMode = mode;
+            const thaiBtn = document.getElementById('thai-mode-btn');
+            const englishBtn = document.getElementById('english-mode-btn');
+            const inputLabel = document.getElementById('input-label');
+            const inputField = document.getElementById('thai-word');
+            const modeDescription = document.getElementById('mode-description');
+            const englishLimitations = document.getElementById('english-limitations');
+            const examplesTitle = document.getElementById('examples-title');
+            const exampleWords = document.getElementById('example-words');
+            
+            // Update button states
+            thaiBtn.classList.toggle('active', mode === 'thai');
+            englishBtn.classList.toggle('active', mode === 'english');
+            
+            // Update UI elements
+            if (mode === 'thai') {
+                inputLabel.textContent = 'Thai Word:';
+                inputField.placeholder = 'Enter a Thai word (e.g., เกา)';
+                modeDescription.textContent = 'Enter a Thai word to analyze its tone and pronunciation rules';
+                englishLimitations.style.display = 'none';
+                examplesTitle.textContent = 'Try these example Thai words:';
+                updateExampleWords('thai');
+            } else {
+                inputLabel.textContent = 'English Word:';
+                inputField.placeholder = 'Enter an English word (e.g., scratch)';
+                modeDescription.textContent = 'Enter an English word to translate and analyze its Thai tone';
+                englishLimitations.style.display = 'block';
+                examplesTitle.textContent = 'Try these example English words:';
+                updateExampleWords('english');
+            }
+            
+            // Clear input when switching modes
+            inputField.value = '';
+        }
+
+        function updateExampleWords(mode) {
+            const exampleWords = document.getElementById('example-words');
+            
+            if (mode === 'thai') {
+                exampleWords.innerHTML = `
+                    <div class="example-word" onclick="setWord('กา')">กา</div>
+                    <div class="example-word" onclick="setWord('ขา')">ขา</div>
+                    <div class="example-word" onclick="setWord('คา')">คา</div>
+                    <div class="example-word" onclick="setWord('เธอ')">เธอ</div>
+                    <div class="example-word" onclick="setWord('เกา')">เกา</div>
+                    <div class="example-word" onclick="setWord('ไก่')">ไก่</div>
+                    <div class="example-word" onclick="setWord('โกรธ')">โกรธ</div>
+                    <div class="example-word" onclick="setWord('ใบแจ้งนี้')">ใบแจ้งนี้</div>
+                    <div class="example-word" onclick="setWord('ก่า')">ก่า</div>
+                    <div class="example-word" onclick="setWord('ข่า')">ข่า</div>
+                    <div class="example-word" onclick="setWord('ค่า')">ค่า</div>
+                    <div class="example-word" onclick="setWord('ก๊า')">ก๊า</div>
+                    <div class="example-word" onclick="setWord('ก๋า')">ก๋า</div>
+                    <div class="example-word" onclick="setWord('ลูกกรอก')">ลูกกรอก</div>
+                    <div class="example-word" onclick="setWord('ลูก')">ลูก</div>
+                    <div class="example-word" onclick="setWord('กรอก')">กรอก</div>
+                    <div class="example-word" onclick="setWord('บ้าน')">บ้าน</div>
+                    <div class="example-word" onclick="setWord('โรงเรียน')">โรงเรียน</div>
+                    <div class="example-word" onclick="setWord('มหาวิทยาลัย')">มหาวิทยาลัย</div>
+                    <div class="example-word" onclick="setWord('สวัสดี')">สวัสดี</div>
+                    <div class="example-word" onclick="setWord('ขอบคุณ')">ขอบคุณ</div>
+                    <div class="example-word" onclick="setWord('น้ำ')">น้ำ</div>
+                    <div class="example-word" onclick="setWord('อาหาร')">อาหาร</div>
+                    <div class="example-word" onclick="setWord('หนังสือ')">หนังสือ</div>
+                    <div class="example-word" onclick="setWord('อะไร')">อะไร</div>
+                    <div class="example-word" onclick="setWord('อย่า')">อย่า</div>
+                    <div class="example-word" onclick="setWord('อยาก')">อยาก</div>
+                    <div class="example-word" onclick="setWord('อยู่')">อยู่</div>
+                    <div class="example-word" onclick="setWord('นม')">นม</div>
+                    <div class="example-word" onclick="setWord('คน')">คน</div>
+                    <div class="example-word" onclick="setWord('ลม')">ลม</div>
+                    <div class="example-word" onclick="setWord('ผสม')">ผสม</div>
+                    <div class="example-word" onclick="setWord('ถนน')">ถนน</div>
+                    <div class="example-word" onclick="setWord('บวก')">บวก</div>
+                    <div class="example-word" onclick="setWord('สวน')">สวน</div>
+                `;
+            } else {
+                exampleWords.innerHTML = `
+                    <div class="example-word" onclick="setWord('hello')">hello</div>
+                    <div class="example-word" onclick="setWord('water')">water</div>
+                    <div class="example-word" onclick="setWord('food')">food</div>
+                    <div class="example-word" onclick="setWord('book')">book</div>
+                    <div class="example-word" onclick="setWord('house')">house</div>
+                    <div class="example-word" onclick="setWord('school')">school</div>
+                    <div class="example-word" onclick="setWord('good')">good</div>
+                    <div class="example-word" onclick="setWord('bad')">bad</div>
+                    <div class="example-word" onclick="setWord('big')">big</div>
+                    <div class="example-word" onclick="setWord('small')">small</div>
+                    <div class="example-word" onclick="setWord('hot')">hot</div>
+                    <div class="example-word" onclick="setWord('cold')">cold</div>
+                    <div class="example-word" onclick="setWord('fast')">fast</div>
+                    <div class="example-word" onclick="setWord('slow')">slow</div>
+                    <div class="example-word" onclick="setWord('happy')">happy</div>
+                    <div class="example-word" onclick="setWord('sad')">sad</div>
+                    <div class="example-word" onclick="setWord('beautiful')">beautiful</div>
+                    <div class="example-word" onclick="setWord('ugly')">ugly</div>
+                    <div class="example-word" onclick="setWord('new')">new</div>
+                    <div class="example-word" onclick="setWord('old')">old</div>
+                    <div class="example-word" onclick="setWord('young')">young</div>
+                    <div class="example-word" onclick="setWord('tall')">tall</div>
+                    <div class="example-word" onclick="setWord('short')">short</div>
+                    <div class="example-word" onclick="setWord('long')">long</div>
+                    <div class="example-word" onclick="setWord('wide')">wide</div>
+                    <div class="example-word" onclick="setWord('narrow')">narrow</div>
+                    <div class="example-word" onclick="setWord('heavy')">heavy</div>
+                    <div class="example-word" onclick="setWord('light')">light</div>
+                    <div class="example-word" onclick="setWord('strong')">strong</div>
+                    <div class="example-word" onclick="setWord('weak')">weak</div>
+                    <div class="example-word" onclick="setWord('rich')">rich</div>
+                    <div class="example-word" onclick="setWord('poor')">poor</div>
+                `;
+            }
+        }
 
         // Check connectivity on page load
         async function checkConnectivity() {
@@ -966,18 +1153,26 @@
         function updateConnectivityUI() {
             const statusEl = document.getElementById('connectivity-status');
             const offlineHelpEl = document.getElementById('offline-help');
-            const inputEl = document.getElementById('thai-word');
+            const englishLimitationsEl = document.getElementById('english-limitations');
             
             if (isOnline) {
                 statusEl.innerHTML = '✅ <strong>Online:</strong> All features available';
                 statusEl.className = 'online-indicator';
                 offlineHelpEl.style.display = 'none';
-                inputEl.placeholder = 'Enter a Thai word (e.g., เกา) or English word (e.g., scratch)';
+                // Show English limitations only in English mode
+                if (currentMode === 'english') {
+                    englishLimitationsEl.style.display = 'block';
+                }
             } else {
                 statusEl.innerHTML = '⚠️ <strong>Offline:</strong> Limited features available';
                 statusEl.className = 'offline-indicator';
                 offlineHelpEl.style.display = 'block';
-                inputEl.placeholder = 'Enter a Thai word (e.g., เกา) - English translation unavailable offline';
+                englishLimitationsEl.style.display = 'none';
+                
+                // If in English mode and offline, switch to Thai mode
+                if (currentMode === 'english') {
+                    setMode('thai');
+                }
             }
         }
 
@@ -994,10 +1189,31 @@
                 return;
             }
 
-            // Check if trying to use English translation while offline
-            if (!isOnline && /^[a-zA-Z\s]+$/.test(word)) {
-                alert('English translation is not available offline. Please enter a Thai word directly.');
-                return;
+            // Validate input based on current mode
+            if (currentMode === 'english') {
+                // Check if trying to use English translation while offline
+                if (!isOnline) {
+                    alert('English translation is not available offline. Please switch to Thai mode or enter a Thai word directly.');
+                    return;
+                }
+                
+                // Check if input contains only English characters
+                if (!/^[a-zA-Z\s]+$/.test(word)) {
+                    alert('Please enter only English characters in English mode. Switch to Thai mode for Thai words.');
+                    return;
+                }
+                
+                // Check if it's a single word (no spaces)
+                if (word.includes(' ')) {
+                    alert('English mode only supports single words. Please enter one word at a time or switch to Thai mode for phrases.');
+                    return;
+                }
+            } else {
+                // Thai mode - check if input contains Thai characters
+                if (!/[\u0E00-\u0E7F]/.test(word)) {
+                    alert('Please enter a Thai word in Thai mode. Switch to English mode for English words.');
+                    return;
+                }
             }
 
             console.log('Analyzing word:', word); // Debug log
