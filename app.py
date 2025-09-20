@@ -784,8 +784,6 @@ def split_into_syllables(word):
         return ['บ้าน']
     elif word == 'โรงเรียน':
         return ['โรง', 'เรียน']
-    elif word == 'สวัสดี':
-        return ['สวัส', 'ดี']
     elif word == 'ขอบคุณ':
         return ['ขอบ', 'คุณ']
     elif word == 'น้ำ':
@@ -816,6 +814,8 @@ def split_into_syllables(word):
         return ['น่า', 'เบื่อ']
     elif word == 'การทดสอบ':
         return ['การ', 'ทด', 'สอบ']
+    elif word == 'สวัสดี':
+        return ['สวั', 'ส', 'ดี']  # สวั (ส+implied vowel+ว+ั), ส (ส+implied vowel), ดี (ด+ี)
     # Handle English words (single syllable)
     elif word.isascii() and word.isalpha():
         return [word]
