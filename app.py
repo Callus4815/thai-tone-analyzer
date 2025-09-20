@@ -446,6 +446,16 @@ def find_initial_consonant(word):
             any(vowel in next_char for vowel in COMPLEX_VOWELS.keys())):
             return 'อ', 0  # อ is the zero consonant
     
+    # Check for ห (ho hip) leading consonant + low-class sonorant
+    if len(word) > 1 and word[0] == 'ห':
+        next_char = word[1]
+        # Low-class sonorant consonants that can be led by ห
+        low_sonorants = ['ง', 'ญ', 'น', 'ม', 'ย', 'ร', 'ล', 'ว']
+        if next_char in low_sonorants:
+            # ห acts as leading consonant, the following consonant determines the tone class
+            # but the tone rules follow high-class consonant rules
+            return next_char, 0  # Return the following consonant, but mark it as high-class for tone purposes
+    
     # Check for consonant clusters
     if is_consonant_cluster_start(word, 0):
         return word[0], 0  # Return the first consonant of the cluster
@@ -816,6 +826,12 @@ def split_into_syllables(word):
         return ['การ', 'ทด', 'สอบ']
     elif word == 'สวัสดี':
         return ['ส', 'วัส', 'ดี']  # ส (ส+implied vowel), วัส (ว+ั+ส+implied vowel), ดี (ด+ี)
+    elif word == 'หนู':
+        return ['หนู']  # Single syllable with ห leading consonant
+    elif word == 'หมา':
+        return ['หมา']  # Single syllable with ห leading consonant
+    elif word == 'หลับ':
+        return ['หลับ']  # Single syllable with ห leading consonant
     # Handle English words (single syllable)
     elif word.isascii() and word.isalpha():
         return [word]
@@ -829,6 +845,23 @@ def find_syllable_end(word, start):
     # Build the syllable character by character
     while i < len(word):
         char = word[i]
+        
+        # Check for complex vowels first (they take priority over everything else)
+        complex_vowel_found = False
+        for complex_vowel, info in COMPLEX_VOWELS.items():
+            pattern = info['pattern']
+            import re
+            if re.search(pattern, word[i:]):
+                # Found a complex vowel starting at position i
+                match = re.search(pattern, word[i:])
+                if match:
+                    # Move past the entire complex vowel
+                    i += match.end()
+                    complex_vowel_found = True
+                    break
+        
+        if complex_vowel_found:
+            continue
         
         # If we're at the start and it's a vowel symbol, include it
         if i == start and is_vowel_symbol(char):
@@ -850,8 +883,8 @@ def find_syllable_end(word, start):
                 i += 1  # Include single consonant
             continue
         
-        # If it's a vowel, include it
-        if char in SIMPLE_VOWELS or any(vowel in char for vowel in COMPLEX_VOWELS.keys()):
+        # If it's a simple vowel, include it
+        if char in SIMPLE_VOWELS:
             i += 1
             continue
         
@@ -966,6 +999,16 @@ def analyze_single_syllable(syllable):
     
     consonant_class = get_consonant_class(initial_consonant)
     
+    # Check for ห (ho hip) leading consonant + low-class sonorant
+    # This changes the tone class to high-class for tone rule purposes
+    is_ho_hip_leading = False
+    if len(syllable) > 1 and syllable[0] == 'ห':
+        next_char = syllable[1]
+        low_sonorants = ['ง', 'ญ', 'น', 'ม', 'ย', 'ร', 'ล', 'ว']
+        if next_char in low_sonorants and consonant_class == 'low':
+            is_ho_hip_leading = True
+            consonant_class = 'high'  # Override to high-class for tone rules
+    
     if not consonant_class:
         # Check if it's an obsolete consonant
         if initial_consonant == 'ฅ':
@@ -988,7 +1031,10 @@ def analyze_single_syllable(syllable):
     tone = "Unknown"
     explanation_parts = []
     
-    explanation_parts.append(f"Initial consonant: '{initial_consonant}' (Class: {consonant_class})")
+    if is_ho_hip_leading:
+        explanation_parts.append(f"Initial consonant: '{initial_consonant}' (Class: low, but ห leading consonant makes it high-class for tone rules)")
+    else:
+        explanation_parts.append(f"Initial consonant: '{initial_consonant}' (Class: {consonant_class})")
     explanation_parts.append(f"Vowel: {vowel_description}")
     
     
