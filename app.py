@@ -1125,8 +1125,16 @@ def determine_tone(word):
     if not word:
         return "No word provided", "Please enter a Thai word."
     
+    # Clean the word - remove non-Thai characters (keep only Thai characters and spaces)
+    import re
+    thai_pattern = re.compile(r'[\u0E00-\u0E7F\s]')
+    cleaned_word = ''.join(thai_pattern.findall(word)).strip()
+    
+    if not cleaned_word:
+        return "Unknown", "No Thai characters found in the word."
+    
     # Split into syllables
-    syllables = split_into_syllables(word)
+    syllables = split_into_syllables(cleaned_word)
     
     if len(syllables) == 1:
         # Single syllable - return as before
