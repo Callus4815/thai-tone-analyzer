@@ -289,7 +289,7 @@ SIMPLE_VOWELS = {
     'ั': {'type': 'short', 'name': 'a (short a)', 'description': 'short a sound'},
     'เ': {'type': 'short', 'name': 'e (short e)', 'description': 'short e sound'},
     'แ': {'type': 'short', 'name': 'ae (short ae)', 'description': 'short ae sound'},
-    'โ': {'type': 'short', 'name': 'o (short o)', 'description': 'short o sound'},
+    'โ': {'type': 'long', 'name': 'o (long o)', 'description': 'long o sound'},
     'ไ': {'type': 'short', 'name': 'ai (short ai)', 'description': 'short ai sound'},
     'ใ': {'type': 'short', 'name': 'ai (short ai)', 'description': 'short ai sound'},
     'ฤ': {'type': 'long', 'name': 'rue (long rue)', 'description': 'long rue sound (Sanskrit)'},
