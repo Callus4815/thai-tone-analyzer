@@ -179,6 +179,7 @@ def translate_english_to_thai(english_word):
             'test': 'ทดสอบ',
             'cat': 'แมว',
             'dog': 'สุนัข',
+            'monkey': 'ลิง',
             'book': 'หนังสือ',
             'water': 'น้ำ',
             'food': 'อาหาร',
@@ -711,7 +712,15 @@ def classify_syllable_type(word):
     if not clean_word:
         return 'live'
     
-    # Check for vowels first to determine if it's long or short
+    # Check if ends with sonorant consonant first (this makes syllable live regardless of vowel)
+    if clean_word[-1] in SONORANT_CONSONANTS:
+        return 'live'
+    
+    # Check if ends with stop consonant
+    if clean_word[-1] in STOP_CONSONANTS:
+        return 'dead'
+    
+    # Check for vowels to determine if it's long or short
     vowels = identify_vowels(clean_word)
     if vowels:
         for vowel in vowels:
@@ -723,14 +732,6 @@ def classify_syllable_type(word):
                 return 'live' if vowel['info']['type'] == 'long' else 'dead'
             elif vowel['type'] == 'w_vowel':
                 return 'live' if vowel['info']['type'] == 'long' else 'dead'
-    
-    # Check if ends with sonorant consonant
-    if clean_word[-1] in SONORANT_CONSONANTS:
-        return 'live'
-    
-    # Check if ends with stop consonant
-    if clean_word[-1] in STOP_CONSONANTS:
-        return 'dead'
     
     # Fallback: check individual characters
     for char in clean_word:
