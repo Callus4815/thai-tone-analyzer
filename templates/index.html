@@ -815,6 +815,67 @@
             font-weight: 600;
         }
 
+        /* Syllable Card Color Themes */
+        .syllable-card-1 {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-left: 4px solid #2196f3;
+            border-radius: 15px;
+        }
+
+        .syllable-card-2 {
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+            border-left: 4px solid #9c27b0;
+            border-radius: 15px;
+        }
+
+        .syllable-card-3 {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            border-left: 4px solid #4caf50;
+            border-radius: 15px;
+        }
+
+        .syllable-card-4 {
+            background: linear-gradient(135deg, #fff3e0, #ffcc02);
+            border-left: 4px solid #ff9800;
+            border-radius: 15px;
+        }
+
+        .syllable-card-5 {
+            background: linear-gradient(135deg, #fce4ec, #f8bbd9);
+            border-left: 4px solid #e91e63;
+            border-radius: 15px;
+        }
+
+        .syllable-card-6 {
+            background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
+            border-left: 4px solid #009688;
+            border-radius: 15px;
+        }
+
+        .syllable-card-7 {
+            background: linear-gradient(135deg, #f1f8e9, #dcedc8);
+            border-left: 4px solid #8bc34a;
+            border-radius: 15px;
+        }
+
+        .syllable-card-8 {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border-left: 4px solid #ffc107;
+            border-radius: 15px;
+        }
+
+        .syllable-card-9 {
+            background: linear-gradient(135deg, #e8eaf6, #c5cae9);
+            border-left: 4px solid #3f51b5;
+            border-radius: 15px;
+        }
+
+        .syllable-card-10 {
+            background: linear-gradient(135deg, #fafafa, #e0e0e0);
+            border-left: 4px solid #607d8b;
+            border-radius: 15px;
+        }
+
         .loading {
             text-align: center;
             color: #666;
@@ -1040,6 +1101,7 @@
             const englishLimitations = document.getElementById('english-limitations');
             const examplesTitle = document.getElementById('examples-title');
             const exampleWords = document.getElementById('example-words');
+            const resultSection = document.getElementById('result-section');
             
             // Update button states
             thaiBtn.classList.toggle('active', mode === 'thai');
@@ -1062,8 +1124,35 @@
                 updateExampleWords('english');
             }
             
-            // Clear input when switching modes
+            // Clear input and results when switching modes
             inputField.value = '';
+            clearResults();
+        }
+
+        // Function to clear all results
+        function clearResults() {
+            const resultSection = document.getElementById('result-section');
+            const analysisGrid = document.getElementById('analysis-grid');
+            const ruleText = document.getElementById('rule-text');
+            const wordDisplay = document.getElementById('word-display');
+            const toneBadge = document.getElementById('tone-badge');
+            
+            // Hide result section
+            resultSection.style.display = 'none';
+            resultSection.classList.remove('show');
+            
+            // Clear all content
+            analysisGrid.innerHTML = '';
+            ruleText.innerHTML = '';
+            wordDisplay.textContent = '';
+            toneBadge.textContent = '';
+            toneBadge.className = 'tone-badge';
+            
+            // Remove any existing word info
+            const existingWordInfo = document.querySelector('.word-info');
+            if (existingWordInfo) {
+                existingWordInfo.remove();
+            }
         }
 
         function updateExampleWords(mode) {
@@ -1297,6 +1386,19 @@
             const wordInfo = document.createElement('div');
             wordInfo.className = 'word-info';
             
+            // Check for ์ symbol (thanthakhat - silent consonant marker)
+            const hasThanthakhat = data.word.includes('์') || Array.from(data.word).some(c => c.charCodeAt(0) === 0x0E4C);
+            
+            let thanthakhatInfo = '';
+            if (hasThanthakhat) {
+                thanthakhatInfo = `
+                    <div class="info-item" style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); border-left: 4px solid #ffc107; border-radius: 6px; padding: 10px; margin: 8px 0;">
+                        <span class="info-label" style="color: #856404; font-weight: bold;">📝 Special Note:</span>
+                        <span class="info-value" style="color: #856404;">This word contains ์ (thanthakhat) - a silent consonant marker. The consonant before ์ is not pronounced.</span>
+                    </div>
+                `;
+            }
+            
             // Determine what to show based on input language
             let translationInfo = '';
             if (data.input_language === 'english') {
@@ -1321,6 +1423,7 @@
             
             wordInfo.innerHTML = `
                 ${translationInfo}
+                ${thanthakhatInfo}
                 <div class="info-item">
                     <span class="info-label">Romanized:</span>
                     <span class="info-value">${data.romanized}</span>
@@ -1365,8 +1468,9 @@
                 // Add individual syllable analysis
                 data.syllables.forEach((syllable, index) => {
                     const syllableTone = syllable.tone.toLowerCase();
+                    const cardNumber = (index % 10) + 1; // Cycle through 1-10 for colors
                     analysisGrid.innerHTML += `
-                        <div class="analysis-card" style="border-left: 4px solid #${syllableTone === 'mid' ? '28a745' : syllableTone === 'low' ? 'dc3545' : syllableTone === 'falling' ? 'fd7e14' : syllableTone === 'high' ? '007bff' : '6f42c1'};">
+                        <div class="analysis-card syllable-card-${cardNumber}">
                             <div class="card-title">
                                 <div class="card-icon">${index + 1}</div>
                                 Syllable ${index + 1}: ${syllable.syllable}

@@ -10,6 +10,21 @@ import tempfile
 
 app = Flask(__name__)
 
+# Thai Tone Rules and Special Characters
+# =====================================
+# 
+# ห Rule (ห leading consonant):
+# When ห (ho hip) is followed by a low-class sonorant consonant (ง, ญ, น, ม, ย, ร, ล, ว),
+# the syllable is treated as having a high-class consonant for tone rule purposes.
+# Example: เหนื่อย (tired) - ห + น makes it behave like high-class consonant
+#
+# ์ Rule (thanthakhat - silent consonant marker):
+# The ์ symbol (thanthakhat) indicates that the preceding consonant is not pronounced.
+# This is commonly used in Sanskrit/Pali loanwords and affects syllable structure.
+# Example: การปฏิสัมพันธ์ (interaction) - the ์ at the end makes ธ silent
+#
+# These rules are important for accurate tone analysis and syllable splitting.
+
 # Simple Thai-English dictionary for common words
 THAI_ENGLISH_DICT = {
     'โกรธ': 'to be angry',
@@ -199,13 +214,10 @@ def translate_english_to_thai(english_word):
                 # First try the main translation
                 translation = data['responseData']['translatedText']
                 translation = translation.strip()
-                if translation and translation != english_word:
-                    # Filter out very long translations that might cause issues
-                    if len(translation) > 50:
-                        return None
+                if translation and translation != english_word and len(translation) <= 50:
                     return translation
                 
-                # If main translation is same as input, try to find a better match
+                # If main translation is too long or same as input, try to find a better match
                 matches = data.get('matches', [])
                 if matches:
                     # Find the best quality match that's different from input
@@ -241,7 +253,7 @@ def detect_input_language(text):
 
 # Thai consonant classes
 CONSONANT_CLASSES = {
-    'mid': ['ก', 'จ', 'ด', 'ต', 'บ', 'ป', 'อ'],
+    'mid': ['ก', 'จ', 'ด', 'ต', 'ฏ', 'ฎ', 'บ', 'ป', 'อ'],
     'high': ['ข', 'ฉ', 'ฐ', 'ถ', 'ผ', 'ฝ', 'ศ', 'ษ', 'ส', 'ห'],
     'low': ['ค', 'ฅ', 'ฆ', 'ง', 'ช', 'ซ', 'ฌ', 'ญ', 'ฑ', 'ฒ', 'ณ', 'ท', 'ธ', 'น', 'พ', 'ฟ', 'ภ', 'ม', 'ย', 'ร', 'ล', 'ว', 'ฬ', 'ฮ', 'ฤ', 'ฦ']
 }
@@ -829,6 +841,9 @@ def split_into_syllables(word):
     # Special cases where we override tltk's result
     special_cases = {
         'เหนื่อย': ['เหนื่อ', 'ย'],  # tired - should be 2 syllables
+        'การปฏิสัมพันธ์': ['กาน', 'ปะ', 'ติ', 'สัม', 'พัน'],  # interaction - should be 5 syllables
+        'อันตรกิริยา': ['อัน', 'ตะ', 'ระ', 'กิ', 'ริ', 'ยา'],  # interaction - should be 6 syllables
+        'วันอาทิตย์': ['วัน', 'อา', 'ทิด'],  # Sunday - should be 3 syllables
     }
     
     if word in special_cases:
@@ -852,7 +867,7 @@ def split_into_syllables(word):
         
         # If our algorithm gives the same count, use it
         if len(our_syllables) == tltk_syllable_count:
-            return our_syllables
+            return tltk_syllables
         else:
             # tltk is correct, so we need to fix our splitting
             print(f"Syllable count mismatch for '{word}': tltk={tltk_syllable_count}, our={len(our_syllables)}")
@@ -937,7 +952,7 @@ def split_into_syllables_algorithm(word):
     elif word == 'ใก้':
         return ['ใก้']
     elif word == 'มหาวิทยาลัย':
-        return ['มหา', 'วิ', 'ท', 'ยาลัย']
+        return ['มะ', 'หา', 'วิด', 'ทะ', 'ยา', 'ไล']
     elif word == 'วิทยาลัย':
         return ['วิด', 'ทะ', 'ยา', 'ไล']
     elif word == 'น่อง':
@@ -1095,6 +1110,11 @@ def find_syllable_end(word, start):
     
     return i
 
+def clean_syllable(syllable):
+    """Clean a syllable by removing ์ (thanthakhat) symbols."""
+    # Remove ์ symbols from the end of syllables
+    return syllable.rstrip('์')
+
 def improved_syllable_split(word):
     """Improved syllable splitting using look-back approach."""
     syllables = []
@@ -1103,6 +1123,11 @@ def improved_syllable_split(word):
     while i < len(word):
         # Find where this syllable ends
         syllable_end = find_syllable_end(word, i)
+        
+        # Prevent infinite loop - if end <= i, advance by 1
+        if syllable_end <= i:
+            syllable_end = i + 1
+        
         syllable = word[i:syllable_end]
         
         # Check if this syllable has implied vowels and needs special handling
@@ -1114,12 +1139,12 @@ def improved_syllable_split(word):
                 if len(syllable) >= 3:
                     first_syllable = syllable[0]
                     second_syllable = syllable[1:]
-                    syllables.append(first_syllable)
-                    syllables.append(second_syllable)
+                    syllables.append(clean_syllable(first_syllable))
+                    syllables.append(clean_syllable(second_syllable))
                     i = syllable_end
                     continue
         
-        syllables.append(syllable)
+        syllables.append(clean_syllable(syllable))
         i = syllable_end
     
     return syllables if syllables else [word]
@@ -1262,8 +1287,8 @@ def analyze_single_syllable(syllable):
     explanation = " | ".join(explanation_parts)
     return tone, explanation
 
-def determine_tone(word):
-    """Determine the tone(s) of a Thai word based on tone rules."""
+def determine_tone_with_tltk(word):
+    """Determine tones using tltk's reading response for accurate syllable segmentation."""
     if not word:
         return "No word provided", "Please enter a Thai word."
     
@@ -1275,8 +1300,46 @@ def determine_tone(word):
     if not cleaned_word:
         return "Unknown", "No Thai characters found in the word."
     
+    try:
+        # Use tltk for accurate syllable segmentation
+        import tltk.nlp as tltk_nlp
+        reading = tltk_nlp.th2read(cleaned_word)
+        clean_reading = reading.rstrip('-')
+        tltk_syllables = [syl.strip() for syl in clean_reading.split('-') if syl.strip()]
+        
+        if len(tltk_syllables) == 1:
+            # Single syllable - analyze it
+            tone, explanation = analyze_single_syllable(tltk_syllables[0])
+            return tone, explanation
+        else:
+            # Multiple syllables - analyze each one
+            syllable_analyses = []
+            all_tones = []
+            
+            for i, syllable in enumerate(tltk_syllables):
+                tone, explanation = analyze_single_syllable(syllable)
+                syllable_analyses.append({
+                    'syllable': syllable,
+                    'tone': tone,
+                    'explanation': explanation,
+                    'position': i + 1
+                })
+                all_tones.append(tone)
+            
+            # Create combined explanation
+            combined_explanation = f"Multi-syllable word with {len(tltk_syllables)} syllables: " + " + ".join(all_tones)
+            
+            return "Multi-syllable", combined_explanation, syllable_analyses
+            
+    except Exception as e:
+        print(f"tltk reading failed for '{cleaned_word}': {e}")
+        # Fall back to original method
+        return determine_tone_original(cleaned_word)
+
+def determine_tone_original(word):
+    """Original tone determination method (fallback)."""
     # Split into syllables
-    syllables = split_into_syllables(cleaned_word)
+    syllables = split_into_syllables(word)
     
     if len(syllables) == 1:
         # Single syllable - return as before
@@ -1301,6 +1364,11 @@ def determine_tone(word):
         combined_explanation = f"Multi-syllable word with {len(syllables)} syllables: " + " + ".join(all_tones)
         
         return "Multi-syllable", combined_explanation, syllable_analyses
+
+def determine_tone(word):
+    """Determine the tone(s) of a Thai word based on tone rules."""
+    # Use tltk-based method by default
+    return determine_tone_with_tltk(word)
 
 @app.route('/')
 def index():
