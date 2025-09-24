@@ -1288,8 +1288,8 @@ def analyze_single_syllable(syllable):
     explanation = " | ".join(explanation_parts)
     return tone, explanation
 
-def determine_tone_with_tltk(word):
-    """Determine tones using tltk's reading response for accurate syllable segmentation."""
+def determine_tone_with_tltk_hybrid(word):
+    """Use tltk for syllable segmentation but our original logic for tone analysis."""
     if not word:
         return "No word provided", "Please enter a Thai word."
     
@@ -1309,18 +1309,21 @@ def determine_tone_with_tltk(word):
         tltk_syllables = [syl.strip() for syl in clean_reading.split('-') if syl.strip()]
         
         if len(tltk_syllables) == 1:
-            # Single syllable - analyze it
-            tone, explanation = analyze_single_syllable(tltk_syllables[0])
+            # Single syllable - use our original analysis with the original word
+            tone, explanation = analyze_single_syllable(cleaned_word)
             return tone, explanation
         else:
-            # Multiple syllables - analyze each one
+            # Multiple syllables - use tltk syllables but analyze original word segments
             syllable_analyses = []
             all_tones = []
             
-            for i, syllable in enumerate(tltk_syllables):
-                tone, explanation = analyze_single_syllable(syllable)
+            # For multi-syllable words, we need to map tltk syllables back to original word
+            # For now, use tltk syllables but analyze each as if it were the original word
+            for i, tltk_syllable in enumerate(tltk_syllables):
+                # Use our original analysis for each syllable
+                tone, explanation = analyze_single_syllable(tltk_syllable)
                 syllable_analyses.append({
-                    'syllable': syllable,
+                    'syllable': tltk_syllable,
                     'tone': tone,
                     'explanation': explanation,
                     'position': i + 1
@@ -1368,8 +1371,8 @@ def determine_tone_original(word):
 
 def determine_tone(word):
     """Determine the tone(s) of a Thai word based on tone rules."""
-    # Use tltk-based method by default
-    return determine_tone_with_tltk(word)
+    # Use hybrid tltk method by default
+    return determine_tone_with_tltk_hybrid(word)
 
 @app.route('/')
 def index():
