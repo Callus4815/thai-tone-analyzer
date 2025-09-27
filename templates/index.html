@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #ffffff 50%, #1e40af 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -22,12 +22,13 @@
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
             padding: 40px;
             max-width: 600px;
             width: 100%;
+            border: 3px solid #dc2626;
         }
 
         .header {
@@ -36,18 +37,17 @@
         }
 
         .header h1 {
-            color: #333;
+            color: #1e40af;
             font-size: 2.5em;
             margin-bottom: 10px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         .header p {
-            color: #666;
+            color: #64748b;
             font-size: 1.1em;
+            font-weight: 400;
         }
 
         .input-section {
@@ -112,25 +112,27 @@
 
         .input-group input {
             width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
+            padding: 16px 24px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 1.2em;
             text-align: center;
             transition: all 0.3s ease;
             font-family: 'Fahkwang', sans-serif;
+            background: #f8fafc;
         }
 
         .input-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+            background: #ffffff;
         }
 
         .input-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: #dc2626;
             font-weight: 600;
             font-size: 1.1em;
         }
@@ -163,9 +165,9 @@
         }
 
         .mode-btn.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #dc2626;
             color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
             transform: translateY(-1px);
         }
 
@@ -188,20 +190,21 @@
 
         .analyze-btn {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            padding: 16px;
+            background: #1e40af;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 1.2em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
         }
 
         .analyze-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
         }
 
         .analyze-btn:active {
@@ -230,17 +233,17 @@
         }
 
         .result-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            border: 1px solid #e9ecef;
+            border: 1px solid #e2e8f0;
         }
 
         .result-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
         }
 
@@ -253,43 +256,27 @@
         }
 
         .tone-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-size: 1.2em;
-            font-weight: 600;
+            display: block;
+            width: 100%;
+            padding: 18px 24px;
+            border-radius: 16px;
+            font-size: 1.4em;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            background: #dc2626;
+            color: white;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
         }
 
-        .tone-badge.mid { 
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-        }
-        .tone-badge.low { 
-            background: linear-gradient(135deg, #dc3545, #e74c3c);
-            color: white;
-        }
-        .tone-badge.falling { 
-            background: linear-gradient(135deg, #fd7e14, #ffc107);
-            color: white;
-        }
-        .tone-badge.high { 
-            background: linear-gradient(135deg, #007bff, #6f42c1);
-            color: white;
-        }
-        .tone-badge.rising { 
-            background: linear-gradient(135deg, #6f42c1, #e83e8c);
-            color: white;
-        }
 
         .word-info {
-            margin-top: 15px;
-            padding: 15px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 10px;
-            border: 1px solid #dee2e6;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
         }
 
         .info-item {
@@ -372,6 +359,13 @@
             justify-content: center;
             color: white;
             font-size: 0.8em;
+        }
+
+        .syllable-display {
+            font-family: 'Fahkwang', sans-serif;
+            font-size: 3.0em;
+            font-weight: 600;
+            color: #333;
         }
 
         .card-content {
@@ -679,21 +673,33 @@
         }
 
         .consonant-char {
-            background: #4caf50;
-            color: white;
+            background: transparent;
+            color: #dc2626;
             padding: 12px 16px;
-            border-radius: 8px;
+            border: 2px solid #dc2626;
+            border-radius: 12px;
             font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            text-align: center;
+            min-width: 50px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.0em;
         }
 
         .vowel-char {
-            background: #ff9800;
-            color: white;
-            padding: 8px 12px 8px 35px;
-            border-radius: 6px;
+            background: transparent;
+            color: #1e40af;
+            padding: 12px 16px;
+            border: 2px solid #1e40af;
+            border-radius: 12px;
             font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            text-align: center;
+            min-width: 50px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.0em;
         }
 
         .vowel-above {
@@ -815,64 +821,64 @@
             font-weight: 600;
         }
 
-        /* Syllable Card Color Themes */
+        /* Syllable Card Color Themes - Thai Flag Colors */
         .syllable-card-1 {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            border-left: 4px solid #2196f3;
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            border-left: 4px solid #dc2626;
             border-radius: 15px;
         }
 
         .syllable-card-2 {
-            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-            border-left: 4px solid #9c27b0;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-left: 4px solid #1e40af;
             border-radius: 15px;
         }
 
         .syllable-card-3 {
-            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-            border-left: 4px solid #4caf50;
+            background: linear-gradient(135deg, #fefefe, #f5f5f5);
+            border-left: 4px solid #6b7280;
             border-radius: 15px;
         }
 
         .syllable-card-4 {
-            background: linear-gradient(135deg, #fff3e0, #ffcc02);
-            border-left: 4px solid #ff9800;
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            border-left: 4px solid #b91c1c;
             border-radius: 15px;
         }
 
         .syllable-card-5 {
-            background: linear-gradient(135deg, #fce4ec, #f8bbd9);
-            border-left: 4px solid #e91e63;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-left: 4px solid #1d4ed8;
             border-radius: 15px;
         }
 
         .syllable-card-6 {
-            background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
-            border-left: 4px solid #009688;
+            background: linear-gradient(135deg, #fefefe, #f5f5f5);
+            border-left: 4px solid #9ca3af;
             border-radius: 15px;
         }
 
         .syllable-card-7 {
-            background: linear-gradient(135deg, #f1f8e9, #dcedc8);
-            border-left: 4px solid #8bc34a;
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            border-left: 4px solid #991b1b;
             border-radius: 15px;
         }
 
         .syllable-card-8 {
-            background: linear-gradient(135deg, #fff8e1, #ffecb3);
-            border-left: 4px solid #ffc107;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-left: 4px solid #1e3a8a;
             border-radius: 15px;
         }
 
         .syllable-card-9 {
-            background: linear-gradient(135deg, #e8eaf6, #c5cae9);
-            border-left: 4px solid #3f51b5;
+            background: linear-gradient(135deg, #fefefe, #f5f5f5);
+            border-left: 4px solid #6b7280;
             border-radius: 15px;
         }
 
         .syllable-card-10 {
-            background: linear-gradient(135deg, #fafafa, #e0e0e0);
-            border-left: 4px solid #607d8b;
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            border-left: 4px solid #7f1d1d;
             border-radius: 15px;
         }
 
@@ -1026,13 +1032,6 @@
                 <div class="analysis-content">
                     <div class="analysis-grid" id="analysis-grid">
                         <!-- Analysis cards will be populated by JavaScript -->
-                    </div>
-                    <div class="rule-explanation" id="rule-explanation">
-                        <div class="rule-title">
-                            <div class="rule-icon">📋</div>
-                            Tone Rule Explanation
-                        </div>
-                        <div class="rule-text" id="rule-text"></div>
                     </div>
                 </div>
             </div>
@@ -1366,7 +1365,6 @@
             const wordDisplay = document.getElementById('word-display');
             const toneBadge = document.getElementById('tone-badge');
             const analysisGrid = document.getElementById('analysis-grid');
-            const ruleText = document.getElementById('rule-text');
 
             // Clear previous content
             analysisGrid.innerHTML = '';
@@ -1473,7 +1471,7 @@
                         <div class="analysis-card syllable-card-${cardNumber}">
                             <div class="card-title">
                                 <div class="card-icon">${index + 1}</div>
-                                Syllable ${index + 1}: ${syllable.syllable}
+                                <span class="syllable-display">${syllable.syllable}</span>
                             </div>
                             <div class="card-content">
                                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
@@ -1507,7 +1505,6 @@
                     `;
                 });
 
-                ruleText.innerHTML = `<span class="highlight">Each syllable is analyzed independently using Thai tone rules.</span>`;
             } else {
                 // Handle single syllable words with new parsing
                 analysisGrid.innerHTML = `
@@ -1517,7 +1514,6 @@
                 `;
                 
                 // Set rule explanation for single syllable
-                ruleText.innerHTML = `<span class="highlight">Tone determined by consonant class, vowel length, syllable type, and tone marks.</span>`;
             }
 
             // Make sure the result section is visible
@@ -1549,8 +1545,42 @@
                     }
                 } else if (part.startsWith('Vowel:')) {
                     const vowelText = part.replace('Vowel: ', '');
-                    const vowelMatch = vowelText.match(/vowel '([^']+)' \(([^)]+)\)/);
+                    const vowelMatch = vowelText.match(/vowel '([^']+)' \((.+)\) - (.+)/);
                     if (vowelMatch) {
+                        // Handle different vowel positions around consonant
+                        const vowel = vowelMatch[1];
+                        let vowelDisplay;
+                        
+                        // Check for surrounding vowels (vowels that wrap around the consonant)
+                        if (vowel.includes('_')) {
+                            // Handle surrounding vowels like เ_า, แ_อ, โ_ะ, etc.
+                            const parts = vowel.split('_');
+                            if (parts.length === 2) {
+                                vowelDisplay = `${parts[0]}อ${parts[1]}`;
+                            } else {
+                                // Fallback for unexpected format
+                                vowelDisplay = `อ${vowel}`;
+                            }
+                        } else if (vowel === 'เอิ') {
+                            // Special case for เอิ vowel pattern
+                            vowelDisplay = 'เอิ';
+                        } else if (/^[เแโใไ]/.test(vowel)) {
+                            // Vowel comes before consonant
+                            vowelDisplay = `${vowel}อ`;
+                        } else if (/[ิีึืุู]/.test(vowel)) {
+                            // Vowel comes above consonant
+                            vowelDisplay = `อ${vowel}`;
+                        } else if (/[ั็]/.test(vowel)) {
+                            // Vowel comes below consonant
+                            vowelDisplay = `อ${vowel}`;
+                        } else if (/[าี]/.test(vowel)) {
+                            // Vowel comes after consonant
+                            vowelDisplay = `อ${vowel}`;
+                        } else {
+                            // Default: vowel after consonant
+                            vowelDisplay = `อ${vowel}`;
+                        }
+                        
                         html += `
                             <div class="analysis-step">
                                 <div class="step-header">
@@ -1558,8 +1588,8 @@
                                     <span class="step-title">Vowel Sound</span>
                                 </div>
                                 <div class="step-content">
-                                    <span class="vowel-char">${vowelMatch[1]}</span>
-                                    <span class="vowel-description">${vowelMatch[2]}</span>
+                                    <span class="vowel-char">${vowelDisplay}</span>
+                                    <span class="vowel-description">${vowelMatch[2]} - ${vowelMatch[3]}</span>
                                 </div>
                             </div>
                         `;
@@ -1697,6 +1727,60 @@
                 analyzeWord();
             }
         });
+
+        // Audio playback functionality
+        function playPronunciation(text) {
+            const button = document.getElementById('play-audio');
+            const voiceSelector = document.getElementById('voice-selector');
+            
+            if (!text) {
+                alert('No text to pronounce');
+                return;
+            }
+            
+            // Show loading state
+            button.disabled = true;
+            button.textContent = '🔄 Generating...';
+            
+            // Get selected voice
+            const voice = voiceSelector ? voiceSelector.value : 'th';
+            
+            // Make API call to generate audio
+            fetch('/audio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text, voice: voice })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.audio) {
+                    // Create audio element and play
+                    const audio = new Audio('data:audio/mpeg;base64,' + data.audio);
+                    audio.play().catch(error => {
+                        console.error('Audio play error:', error);
+                        alert('Failed to play audio. Please try again.');
+                    });
+                    
+                    // Reset button after audio starts
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = '🔊 Play Audio';
+                    }, 1000);
+                } else {
+                    alert('Failed to generate audio: ' + (data.error || 'Unknown error'));
+                    button.disabled = false;
+                    button.textContent = '🔊 Play Audio';
+                }
+            })
+            .catch(error => {
+                console.error('Audio generation error:', error);
+                alert('Failed to generate audio. Please check your connection.');
+                button.disabled = false;
+                button.textContent = '🔊 Play Audio';
+            });
+        }
     </script>
 </body>
 </html>

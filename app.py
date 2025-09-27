@@ -276,11 +276,12 @@ COMPLEX_VOWELS = {
     'เ_ีย': {'type': 'long', 'name': 'ia (long ia)', 'description': 'long ia sound', 'pattern': r'เ.*ีย'},
     'เ_็': {'type': 'short', 'name': 'e (short e)', 'description': 'short e sound with mai han-akat', 'pattern': r'เ.*็'},
     'แ_็': {'type': 'short', 'name': 'ae (short ae)', 'description': 'short ae sound with mai han-akat', 'pattern': r'แ.*็'},
+    'เ_ิ': {'type': 'long', 'name': 'er (long er)', 'description': 'long er sound', 'pattern': r'เ.*ิ'},
     'เ_าะ': {'type': 'short', 'name': 'oe (short oe)', 'description': 'short oe sound', 'pattern': r'เ.*าะ'},
     'เ_ะ': {'type': 'short', 'name': 'e (short e)', 'description': 'short e sound', 'pattern': r'เ.*ะ'},
     'แ_ะ': {'type': 'short', 'name': 'ae (short ae)', 'description': 'short ae sound', 'pattern': r'แ.*ะ'},
     'เ_า': {'type': 'long', 'name': 'ao (long ao)', 'description': 'long ao sound', 'pattern': r'เ.*า'},
-    'เ_อ': {'type': 'long', 'name': 'oe (long oe)', 'description': 'long oe sound /ɤː/', 'pattern': r'เ(?!.*ือ).*อ'},
+    'เ_อ': {'type': 'long', 'name': 'er (long er)', 'description': 'long er sound /ɤː/', 'pattern': r'เ(?!.*ือ).*อ'},
     'โ_ะ': {'type': 'short', 'name': 'o (short o)', 'description': 'short o sound', 'pattern': r'โ.*ะ'},
     'ไ_': {'type': 'long', 'name': 'ai (long ai)', 'description': 'long ai sound', 'pattern': r'^ไ[ก-ฮ][่้๊๋]?$'},
     'ใ_': {'type': 'long', 'name': 'ai (long ai)', 'description': 'long ai sound', 'pattern': r'ใ.*'},
@@ -396,11 +397,133 @@ def get_w_vowel_info(word):
 
 def get_vowel_positioning(vowel_char, word, position):
     """Get positioning information for a vowel character."""
+    print(f"Vowel character: {vowel_char}, Word: {word}, Position: {position}")
+    
+    # Check for surrounding vowel patterns by looking at the word structure
+    if vowel_char in ['เ', 'แ', 'โ', 'ไ', 'ใ']:
+        # Check if this is part of a surrounding vowel pattern
+        # Look for the pattern: เ + consonant + ิ/า/อ/ีย/ือ/ัว
+        if position < len(word) - 2:
+            next_char = word[position + 1]
+            after_next_char = word[position + 2] if position + 2 < len(word) else None
+            after_after_next_char = word[position + 3] if position + 3 < len(word) else None
+            
+            # Check for single character surrounding vowels
+            if vowel_char == 'เ' and after_next_char in ['ิ', 'า', 'อ']:
+                if after_next_char == 'ิ':
+                    return {
+                        'position': 'surrounding_start',
+                        'description': 'vowel surrounds consonant (เ before, ิ after)',
+                        'visual_order': 'written before and after consonant',
+                        'pronunciation_order': 'เ spoken first, then consonant, then ิ'
+                    }
+                elif after_next_char == 'า':
+                    return {
+                        'position': 'surrounding_start',
+                        'description': 'vowel surrounds consonant (เ before, า after)',
+                        'visual_order': 'written before and after consonant',
+                        'pronunciation_order': 'เ spoken first, then consonant, then า'
+                    }
+                elif after_next_char == 'อ':
+                    return {
+                        'position': 'surrounding_start',
+                        'description': 'vowel surrounds consonant (เ before, อ after)',
+                        'visual_order': 'written before and after consonant',
+                        'pronunciation_order': 'เ spoken first, then consonant, then อ'
+                    }
+            
+            # Check for compound character surrounding vowels
+            elif vowel_char == 'เ' and position < len(word) - 3:
+                if after_next_char == 'ี' and after_after_next_char == 'ย':
+                    return {
+                        'position': 'surrounding_start',
+                        'description': 'vowel surrounds consonant (เ before, ีย after)',
+                        'visual_order': 'written before and after consonant',
+                        'pronunciation_order': 'เ spoken first, then consonant, then ีย'
+                    }
+                elif after_next_char == 'ื' and after_after_next_char == 'อ':
+                    return {
+                        'position': 'surrounding_start',
+                        'description': 'vowel surrounds consonant (เ before, ือ after)',
+                        'visual_order': 'written before and after consonant',
+                        'pronunciation_order': 'เ spoken first, then consonant, then ือ'
+                    }
+                elif after_next_char == 'ั' and after_after_next_char == 'ว':
+                    return {
+                        'position': 'surrounding_start',
+                        'description': 'vowel surrounds consonant (เ before, ัว after)',
+                        'visual_order': 'written before and after consonant',
+                        'pronunciation_order': 'เ spoken first, then consonant, then ัว'
+                    }
+            
+            elif vowel_char == 'แ' and after_next_char == 'อ':
+                return {
+                    'position': 'surrounding_start',
+                    'description': 'vowel surrounds consonant (แ before, อ after)',
+                    'visual_order': 'written before and after consonant',
+                    'pronunciation_order': 'แ spoken first, then consonant, then อ'
+                }
+            elif vowel_char == 'โ' and after_next_char == 'ะ':
+                return {
+                    'position': 'surrounding_start',
+                    'description': 'vowel surrounds consonant (โ before, ะ after)',
+                    'visual_order': 'written before and after consonant',
+                    'pronunciation_order': 'โ spoken first, then consonant, then ะ'
+                }
+            elif vowel_char == 'ไ':
+                return {
+                    'position': 'surrounding_start',
+                    'description': 'vowel surrounds consonant (ไ before, no after)',
+                    'visual_order': 'written before consonant',
+                    'pronunciation_order': 'ไ spoken first, then consonant'
+                }
+    
+    # Check if this is the second part of a surrounding vowel
+    if vowel_char in ['ิ', 'า', 'อ', 'ะ'] and position > 0:
+        prev_char = word[position - 1]
+        if prev_char in ['เ', 'แ', 'โ']:
+            if prev_char == 'เ' and vowel_char == 'ิ':
+                return {
+                    'position': 'surrounding_end',
+                    'description': 'vowel surrounds consonant (เ before, ิ after)',
+                    'visual_order': 'written before and after consonant',
+                    'pronunciation_order': 'เ spoken first, then consonant, then ิ'
+                }
+            elif prev_char == 'เ' and vowel_char == 'า':
+                return {
+                    'position': 'surrounding_end',
+                    'description': 'vowel surrounds consonant (เ before, า after)',
+                    'visual_order': 'written before and after consonant',
+                    'pronunciation_order': 'เ spoken first, then consonant, then า'
+                }
+            elif prev_char == 'เ' and vowel_char == 'อ':
+                return {
+                    'position': 'surrounding_end',
+                    'description': 'vowel surrounds consonant (เ before, อ after)',
+                    'visual_order': 'written before and after consonant',
+                    'pronunciation_order': 'เ spoken first, then consonant, then อ'
+                }
+            elif prev_char == 'แ' and vowel_char == 'อ':
+                return {
+                    'position': 'surrounding_end',
+                    'description': 'vowel surrounds consonant (แ before, อ after)',
+                    'visual_order': 'written before and after consonant',
+                    'pronunciation_order': 'แ spoken first, then consonant, then อ'
+                }
+            elif prev_char == 'โ' and vowel_char == 'ะ':
+                return {
+                    'position': 'surrounding_end',
+                    'description': 'vowel surrounds consonant (โ before, ะ after)',
+                    'visual_order': 'written before and after consonant',
+                    'pronunciation_order': 'โ spoken first, then consonant, then ะ'
+                }
+    
+    # Handle individual vowel positions
     positioning_info = {
-        'above': ['ิ', 'ี', 'ุ', 'ู'],
-        'below': ['ั', 'ะ'],
+        'above': ['ิ', 'ี', '์'],
+        'below': ['ุ', 'ู'],
         'before': ['เ', 'โ', 'ไ', 'ใ', 'แ'],
-        'after': ['า', 'อ']
+        'after': ['า', 'อ', 'ะ']
     }
     
     for position_type, vowels in positioning_info.items():
@@ -1200,7 +1323,7 @@ def analyze_single_syllable(syllable):
     explanation_parts = []
     
     if is_ho_hip_leading:
-        explanation_parts.append(f"Initial consonant: '{initial_consonant}' (Class: low, but ห leading consonant makes it high-class for tone rules)")
+        explanation_parts.append(f"Initial consonant: '{initial_consonant}' (Class: low class consonant, but ห leading consonant makes it high-class for tone rules)")
     else:
         explanation_parts.append(f"Initial consonant: '{initial_consonant}' (Class: {consonant_class})")
     explanation_parts.append(f"Vowel: {vowel_description}")
@@ -1214,76 +1337,76 @@ def analyze_single_syllable(syllable):
         # Tone marks override other rules
         if '่' in tone_marks:  # mai ek
             if consonant_class == 'mid':
-                tone = "Low"
-                explanation_parts.append("Rule: Mid-class consonant + mai ek (่) = Low tone")
+                tone = "Low Tone"
+                explanation_parts.append("Rule: Mid-class consonant + mai ek (อ่) = Low tone")
             elif consonant_class == 'high':
-                tone = "Low" 
-                explanation_parts.append("Rule: High-class consonant + mai ek (่) = Low tone")
+                tone = "Low Tone" 
+                explanation_parts.append("Rule: High-class consonant + mai ek (อ่) = Low tone")
             elif consonant_class == 'low':
-                tone = "Falling"
-                explanation_parts.append("Rule: Low-class consonant + mai ek (่) = Falling tone")
+                tone = "Falling Tone"
+                explanation_parts.append("Rule: Low-class consonant + mai ek (อ่) = Falling tone")
                 
         elif '้' in tone_marks:  # mai tho
             if consonant_class == 'mid':
-                tone = "Falling"
-                explanation_parts.append("Rule: Mid-class consonant + mai tho (้) = Falling tone")
+                tone = "Falling Tone"
+                explanation_parts.append("Rule: Mid-class consonant + mai tho (อ้) = Falling tone")
             elif consonant_class == 'high':
-                tone = "Falling"
-                explanation_parts.append("Rule: High-class consonant + mai tho (้) = Falling tone")
+                tone = "Falling Tone"
+                explanation_parts.append("Rule: High-class consonant + mai tho (อ้) = Falling tone")
             elif consonant_class == 'low':
-                tone = "High"
-                explanation_parts.append("Rule: Low-class consonant + mai tho (้) = High tone")
+                tone = "High Tone"
+                explanation_parts.append("Rule: Low-class consonant + mai tho (อ้) = High tone")
                 
         elif '๊' in tone_marks:  # mai tri
-            tone = "High"
-            explanation_parts.append("Rule: Any consonant + mai tri (๊) = High tone")
+            tone = "High Tone"
+            explanation_parts.append("Rule: Any consonant + mai tri (อ๊) = High tone")
             
         elif '๋' in tone_marks:  # mai chattawa
             tone = "Rising"
-            explanation_parts.append("Rule: Any consonant + mai chattawa (๋) = Rising tone")
+            explanation_parts.append("Rule: Any consonant + mai chattawa (อ๋) = Rising tone")
     else:
         # No tone marks - use default tone rules
         
+        # Get vowel length for rule explanations
+        vowel_length = "long"  # default
+        if vowels:
+            vowel_length = vowels[0]['info']['type']
+        
         # Special case: single consonant with implied vowel gets Low tone
         if len(syllable) == 1 and has_implied_vowel(syllable):
-            tone = "Low"
+            tone = "Low Tone"
             explanation_parts.append("Rule: Single consonant with implied vowel = Low tone")
         # Special case: วัส pattern gets Low tone (ว + ั + ส with implied vowel after ส)
         elif syllable == 'วัส':
-            tone = "Low"
+            tone = "Low Tone"
             explanation_parts.append("Rule: วัส pattern (ว + ั + ส with implied vowel) = Low tone")
         elif consonant_class == 'mid':
             if syllable_type == 'live':
-                tone = "Mid"
-                explanation_parts.append("Rule: Mid-class consonant + live syllable (long vowel/sonorant ending, no tone mark) = Mid tone")
+                tone = "Mid Tone"
+                explanation_parts.append(f"Rule: Mid-class consonant + live syllable ({vowel_length} vowel) = Mid tone")
             else:  # dead
-                tone = "Low"
-                explanation_parts.append("Rule: Mid-class consonant + dead syllable (short vowel/stop ending, no tone mark) = Low tone")
+                tone = "Low Tone"
+                explanation_parts.append(f"Rule: Mid-class consonant + dead syllable ({vowel_length} vowel) = Low tone")
                 
         elif consonant_class == 'high':
             if syllable_type == 'live':
-                tone = "Rising"
-                explanation_parts.append("Rule: High-class consonant + live syllable (long vowel/sonorant ending, no tone mark) = Rising tone")
+                tone = "Rising Tone"
+                explanation_parts.append(f"Rule: High-class consonant + live syllable ({vowel_length} vowel) = Rising tone")
             else:  # dead
-                tone = "Low"
-                explanation_parts.append("Rule: High-class consonant + dead syllable (short vowel/stop ending, no tone mark) = Low tone")
+                tone = "Low Tone"
+                explanation_parts.append(f"Rule: High-class consonant + dead syllable ({vowel_length} vowel) = Low tone")
                 
         elif consonant_class == 'low':
             if syllable_type == 'live':
-                tone = "Mid"
-                explanation_parts.append("Rule: Low-class consonant + live syllable (long vowel/sonorant ending, no tone mark) = Mid tone")
+                tone = "Mid Tone"
+                explanation_parts.append(f"Rule: Low-class consonant + live syllable ({vowel_length} vowel) = Mid tone")
             else:  # dead
-                # For low class + dead syllable, need to check vowel length
-                vowel_length = "long"  # default
-                if vowels:
-                    vowel_length = vowels[0]['info']['type']
-                
                 if vowel_length == 'short':
-                    tone = "High"
-                    explanation_parts.append("Rule: Low-class consonant + dead syllable (short vowel, no tone mark) = High tone")
+                    tone = "High Tone"
+                    explanation_parts.append("Rule: Low-class consonant + dead syllable (short vowel) = High tone")
                 else:  # long vowel
-                    tone = "Falling"
-                    explanation_parts.append("Rule: Low-class consonant + dead syllable (long vowel, no tone mark) = Falling tone")
+                    tone = "Falling Tone"
+                    explanation_parts.append("Rule: Low-class consonant + dead syllable (long vowel) = Falling tone")
     
     explanation = " | ".join(explanation_parts)
     return tone, explanation
@@ -1489,12 +1612,44 @@ def analyze():
             'romanization_analysis': romanization_analysis
         })
 
+def generate_audio(text, voice='th'):
+    """Generate audio for Thai text using gTTS."""
+    try:
+        from gtts import gTTS
+        import base64
+        import io
+        import time
+        
+        start_time = time.time()
+        print(f"Starting audio generation for: {text}")
+        
+        # Create gTTS object with optimized settings
+        tts = gTTS(text=text, lang='th', slow=False, tld='com')
+        
+        # Save to bytes buffer
+        audio_buffer = io.BytesIO()
+        tts.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+        
+        # Convert to base64
+        audio_base64 = base64.b64encode(audio_buffer.getvalue()).decode('utf-8')
+        
+        end_time = time.time()
+        print(f"Audio generation completed in {end_time - start_time:.2f} seconds")
+        print(f"Audio size: {len(audio_base64) / 1024:.1f} KB")
+        
+        return audio_base64
+        
+    except Exception as e:
+        print(f"Audio generation error: {e}")
+        return None
+
 @app.route('/audio', methods=['POST'])
 def get_audio():
     """Generate audio for Thai text."""
     data = request.get_json()
     text = data.get('text', '').strip()
-    voice = data.get('voice', 'th-TH-AcharaNeural')
+    voice = data.get('voice', 'th')
     
     if not text:
         return jsonify({'error': 'Please provide text to convert to speech.'})
@@ -1510,7 +1665,7 @@ def get_audio():
     else:
         return jsonify({
             'success': False,
-            'error': 'Failed to generate audio. Please check your Google Cloud credentials.'
+            'error': 'Failed to generate audio. Please try again.'
         })
 
 @app.route('/voices', methods=['GET'])
