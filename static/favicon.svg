@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Background circle with Thai flag colors -->
+  <circle cx="16" cy="16" r="15" fill="#dc2626" stroke="#1e40af" stroke-width="2"/>
+  
+  <!-- Thai character "ก" (first letter of Thai alphabet) -->
+  <text x="16" y="22" font-family="serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">ก</text>
+  
+  <!-- Tone mark accent above -->
+  <circle cx="16" cy="8" r="2" fill="white"/>
+</svg>

@@ -1697,6 +1697,16 @@ def check_connectivity():
             'timestamp': ''
         })
 
+@app.route('/favicon.svg')
+def favicon_svg():
+    """Serve the SVG favicon."""
+    return app.send_static_file('favicon.svg')
+
+@app.route('/favicon.ico')
+def favicon_ico():
+    """Serve the ICO favicon (fallback)."""
+    return app.send_static_file('favicon.ico')
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5001))
