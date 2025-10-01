@@ -6,6 +6,9 @@
     <title>Thai Tone Analyzer</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
         * {
             margin: 0;
@@ -1567,8 +1570,13 @@
                             // Special case for เอิ vowel pattern
                             vowelDisplay = 'เอิ';
                         } else if (/^[เแโใไ]/.test(vowel)) {
-                            // Vowel comes before consonant
-                            vowelDisplay = `${vowel}อ`;
+                            // Vowel comes before consonant, but check if it's already a complete vowel sound
+                            const completeVowels = ['โอะ', 'เอิ', 'เอา', 'เอะ', 'แอะ', 'ไอ', 'ใอ'];
+                            if (completeVowels.includes(vowel)) {
+                                vowelDisplay = vowel; // Already complete vowel sound
+                            } else {
+                                vowelDisplay = `${vowel}อ`;
+                            }
                         } else if (/[ิีึืุู]/.test(vowel)) {
                             // Vowel comes above consonant
                             vowelDisplay = `อ${vowel}`;
