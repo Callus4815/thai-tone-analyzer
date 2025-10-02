@@ -321,7 +321,7 @@ SHORT_VOWELS = [v for v, info in SIMPLE_VOWELS.items() if info['type'] == 'short
 SONORANT_CONSONANTS = ['ม', 'น', 'ง', 'ย', 'ร', 'ล', 'ว']
 
 # Stop consonants (for live/dead syllable classification) - these make syllables "dead"
-STOP_CONSONANTS = ['ก', 'ด', 'บ', 'ป', 'จ', 'ต', 'ธ', 'ษ', 'ศ', 'ข', 'ค', 'ฆ', 'ช', 'ซ', 'ฌ', 'ญ', 'ฎ', 'ฏ', 'ฐ', 'ฑ', 'ฒ', 'ณ', 'ฟ', 'ภ', 'ห', 'ฮ']
+STOP_CONSONANTS = ['ก', 'ด', 'บ', 'ป', 'จ', 'ต', 'ธ', 'ษ', 'ศ', 'ข', 'ค', 'ฆ', 'ช', 'ซ', 'ฌ', 'ญ', 'ฎ', 'ฏ', 'ฐ', 'ฑ', 'ฒ', 'ณ', 'ฟ', 'ภ', 'ห', 'ฮ', 'พ']
 
 def get_consonant_class(char):
     """Determine the class of a Thai consonant."""
@@ -814,6 +814,50 @@ def get_vowel_description(vowels):
             positioning_text = f" ({positioning_info.get('description', '')})" if positioning_info else ""
             return f"vowel '{vowel['char']}' ({vowel['info']['name']}) - {vowel['info']['description']}{positioning_text}"
     else:
+        # For multiple vowels, return the primary vowel (the main vowel sound)
+        # Priority: 1) Long vowels over short vowels, 2) Vowels after consonants over above/below vowels
+        primary_vowel = None
+        best_priority = -1
+        
+        for vowel in vowels:
+            priority = 0
+            
+            # Priority 1: Long vowels over short vowels
+            if vowel['info']['type'] == 'long':
+                priority += 100
+            else:
+                priority += 50
+            
+            # Priority 2: Vowels after consonants (า, อ, ะ) over above/below vowels (ิ, ี, ุ, ู)
+            positioning = vowel.get('positioning', {})
+            position = positioning.get('position', '')
+            if position == 'after':
+                priority += 20
+            elif position in ['above', 'below']:
+                priority += 10
+            
+            # Priority 3: Earlier position (closer to consonant)
+            priority += (10 - vowel.get('position', 0))
+            
+            if priority > best_priority:
+                primary_vowel = vowel
+                best_priority = priority
+        
+        # If no position info, use the first vowel in the list
+        if primary_vowel is None and vowels:
+            primary_vowel = vowels[0]
+            
+        if primary_vowel:
+            if primary_vowel['type'] == 'implied':
+                return f"implied vowel '{primary_vowel['char']}' ({primary_vowel['info']['name']}) - {primary_vowel['info']['description']} ({primary_vowel['position']})"
+            elif primary_vowel['type'] == 'w_vowel':
+                return f"'{primary_vowel['char']}' vowel sound ({primary_vowel['info']['name']}) - {primary_vowel['info']['description']} ({primary_vowel['position']})"
+            else:
+                positioning_info = primary_vowel.get('positioning', {})
+                positioning_text = f" ({positioning_info.get('description', '')})" if positioning_info else ""
+                return f"vowel '{primary_vowel['char']}' ({primary_vowel['info']['name']}) - {primary_vowel['info']['description']}{positioning_text}"
+        
+        # Fallback: return all vowels if we can't determine primary
         vowel_descriptions = []
         for vowel in vowels:
             if vowel['type'] == 'implied':
@@ -829,6 +873,10 @@ def get_vowel_description(vowels):
 
 def classify_syllable_type(word):
     """Classify syllable as live or dead."""
+    # Check for tone marks first - syllables with tone marks are always dead
+    if any(char in TONE_MARKS for char in word):
+        return 'dead'
+    
     # Remove tone marks for analysis
     clean_word = ''.join([char for char in word if char not in TONE_MARKS])
     
@@ -846,15 +894,29 @@ def classify_syllable_type(word):
     # Check for vowels to determine if it's long or short
     vowels = identify_vowels(clean_word)
     if vowels:
+        # For multiple vowels, prioritize the final vowel (the one that determines syllable type)
+        # Find the vowel closest to the end of the word
+        final_vowel = None
+        final_position = -1
+        
         for vowel in vowels:
-            if vowel['type'] == 'complex':
-                return 'live' if vowel['info']['type'] == 'long' else 'dead'
-            elif vowel['type'] == 'simple':
-                return 'live' if vowel['info']['type'] == 'long' else 'dead'
-            elif vowel['type'] == 'implied':
-                return 'live' if vowel['info']['type'] == 'long' else 'dead'
-            elif vowel['type'] == 'w_vowel':
-                return 'live' if vowel['info']['type'] == 'long' else 'dead'
+            if vowel.get('position', 0) > final_position:
+                final_vowel = vowel
+                final_position = vowel.get('position', 0)
+        
+        # If no position info, use the last vowel in the list
+        if final_vowel is None and vowels:
+            final_vowel = vowels[-1]
+            
+        if final_vowel:
+            if final_vowel['type'] == 'complex':
+                return 'live' if final_vowel['info']['type'] == 'long' else 'dead'
+            elif final_vowel['type'] == 'simple':
+                return 'live' if final_vowel['info']['type'] == 'long' else 'dead'
+            elif final_vowel['type'] == 'implied':
+                return 'live' if final_vowel['info']['type'] == 'long' else 'dead'
+            elif final_vowel['type'] == 'w_vowel':
+                return 'live' if final_vowel['info']['type'] == 'long' else 'dead'
     
     # Fallback: check individual characters
     for char in clean_word:
